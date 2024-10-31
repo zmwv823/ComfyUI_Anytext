@@ -25,5 +25,12 @@ Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Edi
 ### Modelscope:
 - https://modelscope.cn/studio/iic/studio_anytext/resolve/master/font/Arial_Unicode.ttf
 
+## Zh to En Translators: 
+### T5: Auto_Download from huggingface or manual download or git clone from huggingface into `ComfyUI\models\prompt_generator\models--utrobinmv--t5_translate_en_ru_zh_base_200`.
+- https://huggingface.co/utrobinmv/t5_translate_en_ru_zh_small_1024
+- https://hf-mirror.com/utrobinmv/t5_translate_en_ru_zh_small_1024 (China mainland users)
+### nlp_csanmt_translation_zh2en:  Auto_Download from modelscope or manual download or git clone from modelscope into `ComfyUI\models\prompt_generator\modelscope--damo--nlp_csanmt_translation_zh2en`.
+- https://modelscope.cn/models/iic/nlp_csanmt_translation_zh2en
+
 ### Workflow in workflow dir:
 ![](./workflow/Anytext-wf.png)

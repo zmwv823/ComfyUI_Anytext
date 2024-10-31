@@ -1,0 +1,20 @@
+pillow>=9.5.0
+numpy<=1.26.4 #numpy<2
+opencv-python
+accelerate
+huggingface_hub
+pytorch_lightning
+ujson
+omegaconf
+easydict
+open_clip_torch
+
+#nlp translator
+tensorflow
+modelscope
+addict
+datasets==2.18.0
+simplejson
+sortedcontainers
+subword_nmt
+

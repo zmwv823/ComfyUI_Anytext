@@ -281,7 +281,7 @@ class AnyText_Model_Loader:
             if Auto_Download_Path:
                 clip_path = os.path.join(folder_paths.models_dir, "clip", 'models--openai--clip-vit-large-patch14')
                 if not os.path.exists(os.path.join(clip_path, 'model.safetensors')):
-                    download_repoid_model_from_huggingface("openai/clip-vit-large-patch14", clip_path)
+                    download_repoid_model_from_huggingface("openai/clip-vit-large-patch14", clip_path, ignore_patterns=[".msgpack", ".bin", ".h5"])
             else:
                 clip_path = "openai/clip-vit-large-patch14"
                 

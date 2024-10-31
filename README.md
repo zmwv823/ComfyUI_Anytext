@@ -18,10 +18,10 @@ Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Edi
 ### Modelscope:
 - https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/files
 
-## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or any other fonts.
+## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts.
 ### Huggingface:
 - https://huggingface.co/Sanster/AnyText/blob/main/SourceHanSansSC-Medium.otf
-- https://hf-mirror.com/Sanster/AnyText/blob/main/SourceHanSansSC-Medium.otf
+- https://hf-mirror.com/Sanster/AnyText/blob/main/SourceHanSansSC-Medium.otf (China mainland users)
 ### Modelscope:
 - https://modelscope.cn/studio/iic/studio_anytext/resolve/master/font/Arial_Unicode.ttf
 

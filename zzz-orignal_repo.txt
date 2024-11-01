@@ -1,0 +1,11 @@
+ComfyUI-Node:
+
+
+Original Repo:
+https://github.com/tyxsspa/AnyText
+
+Huggingface:
+https://huggingface.co/Sanster/AnyText
+
+Modelscope:
+https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/summary

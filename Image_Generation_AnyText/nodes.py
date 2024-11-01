@@ -325,7 +325,7 @@ class AnyText_Params:
         return {
             "required": {
                 "font_name": (['Auto_DownLoad'] + [file for file in self.font_files], {"default": "AnyText-Arial-Unicode.ttf"}),
-                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装tensorflow和modelscope库，其余不建议。"}), 
+                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI\custom_nodes\ComfyUI_Anytext\requirements-with-nlp-translator.txt`，其余不建议。"}), 
                 "translator_device": (["auto", "cuda", "cpu", "mps", "xpu"],{"default": "auto"}), 
                 "keep_translator_loaded": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
                 "keep_translator_device": ("BOOLEAN", {"default": True, "label_on": "cpu", "label_off": "device"}),
@@ -344,13 +344,13 @@ class AnyText_Params:
         font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
         from PIL import ImageFont
         if not os.path.exists(font_path):
-            font_path = os.path.join(folder_paths.models_dir, "fonts", "AnyText-SourceHanSansSC-Medium.otf")
+            font_path = os.path.join(folder_paths.models_dir, "fonts", "SourceHanSansSC-Medium.otf")
             if not os.path.exists(font_path):
                 from huggingface_hub import hf_hub_download as hg_hf_hub_download
                 hg_hf_hub_download(
                     repo_id="Sanster/AnyText", 
                     filename="SourceHanSansSC-Medium.otf", 
-                    local_dir=os.path.join(folder_paths.models_dir, "fonts"), force_filename='AnyText-SourceHanSansSC-Medium.otf',
+                    local_dir=os.path.join(folder_paths.models_dir, "fonts"), 
                     )
                 
         font = ImageFont.truetype(font_path, size=60, encoding='utf-8')

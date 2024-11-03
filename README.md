@@ -34,6 +34,7 @@
 - https://modelscope.cn/models/iic/nlp_csanmt_translation_zh2en
 
 ### Workflow in workflow dir:
+
 ![](./workflow/Anytext-wf.png)
 
 # 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
@@ -49,4 +50,5 @@
 ## For inpaint checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`.
 
 ### Workflow in workflow dir:
+
 ![](./workflow/Img_Gen-Glyph_Byt5-wf.png)

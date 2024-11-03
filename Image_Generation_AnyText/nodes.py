@@ -9,6 +9,7 @@ from comfy.utils import load_torch_file
 from .AnyText_scripts.AnyText_pipeline_util import resize_image
 from ..UL_common.common import pil2tensor, get_device_by_name, get_files_with_extension, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name
 from .. import comfy_temp_dir
+from comfy.model_management import unet_offload_device
 
 Random_Gen_Mask_path = os.path.join(comfy_temp_dir,  "AnyText_random_mask_pos_img.png")
 
@@ -37,7 +38,7 @@ class UL_Image_Generation_AnyText:
                 "batch_size": ("INT", {"default": 1, "min": 1, "max": 10}),
                 "device": (["auto", "cuda", "cpu", "mps", "xpu", "meta"],{"default": "auto", "tooltip": "Pytorch devices."}), 
                 "keep_model_loaded": ("BOOLEAN", {"default": True, "label_on": "yes", "label_off": "no", "tooltip": "Warning: do not delete model unless this node no longer needed, it will try release device_memory and ram. if checked and want to continue node generation, use ComfyUI-Manager `Free model and node cache` to reset node state or change parameter in Loader node to activate.\n注意：仅在这个节点不再需要时删除模型，将尽量释放系统内存和设备专用内存。如果删除后想继续使用此节点，使用ComfyUI-Manager插件的`Free model and node cache`重置节点状态或者更换模型加载节点的参数来激活。"}),
-                "keep_model_device": ("BOOLEAN", {"default": True, "label_on": "cpu", "label_off": "device", "tooltip": "Keep model in ram or device_memory after generation.\n生图完成后，模型转移到系统内存或者保留在设备专用内存上。"}),
+                "keep_model_device": ("BOOLEAN", {"default": True, "label_on": "comfy", "label_off": "device", "tooltip": "Keep model in comfy_auto_unet_offload_device (HIGH_VRAM: device, Others: cpu) or device_memory after generation.\n生图完成后，模型转移到comfy自动unet选择设备(HIGH_VRAM: device, 其他: cpu)或者保留在设备专用内存上。"}),
             },
             "optional": {
                         "ori_image": ("IMAGE", {"forceInput": True}),
@@ -236,13 +237,13 @@ class UL_Image_Generation_AnyText:
         
         if not keep_model_loaded:
             del anytext_model['model']
-            self.model = None
             del pipe.anytext_model
             del pipe
+            self.model = None
             clean_up()
         else:
             if keep_model_device:
-                self.model.to('cpu')
+                self.model.to(unet_offload_device())
                 clean_up()
         
         return(result, mask, )
@@ -251,12 +252,16 @@ class AnyText_Model_Loader:
     @classmethod
     def INPUT_TYPES(self):
         checkpoints_list = folder_paths.get_filename_list("checkpoints")
-        clip_list = os.listdir(os.path.join(folder_paths.models_dir, "clip"))
-        clip_folders = [folder for folder in clip_list if os.path.isdir(os.path.join(folder_paths.models_dir, "clip", folder))]
+        
+        text_encoders = os.listdir(os.path.join(folder_paths.models_dir, "clip")) + os.listdir(os.path.join(folder_paths.models_dir, "text_encoders"))
+        text_encoder_list = []
+        for folder in text_encoders:
+            if os.path.isdir(os.path.join(folder_paths.models_dir, "clip", folder)) or os.path.isdir(os.path.join(folder_paths.models_dir, "text_encoders", folder)):
+                text_encoder_list.append(folder)
         return {
             "required": {
                 "ckpt_name": (['Auto_DownLoad'] + checkpoints_list, {"tooltip": "Must be AnyText pretained checkpoint, other SD1.5 base model doesn't work. If Auto_Download selected, fp16 checkpoint will download from huggingface into `ComfyUI\models\checkpoints\15` and rename to `anytext_v1.1.safetensors`.\n只支持AnyText预训练模型，其他SD1.5模型无效。如果选择自动下载(Auto_DownLoad)且以前没下载过，基座模型会下载到`ComfyUI\models\checkpoints\15`。"}),
-                "clip": (["Auto_DownLoad"] + clip_folders, {"tooltip": "If Auto_Download selected, clip model files will cached (Auto_Download_Path not checked) or download into `ComfyUI\models\clip` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件将下载到`ComfyUI\models\clip`，否则缓存到huggingface缓存路径。"}),
+                "clip_name": (["Auto_DownLoad"] + text_encoder_list, {"tooltip": "If Auto_Download selected, clip model files will cached (Auto_Download_Path not checked) or download into `ComfyUI\models\clip` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件将下载到`ComfyUI\models\clip`，否则缓存到huggingface缓存路径。"}),
                 "dtype": (["auto", "fp16", "fp32", "bf16", "fp8_e4m3fn", "fp8_e4m3fnuz", "fp8_e5m2", "fp8_e5m2fnuz"],{"default":"auto", "tooltip": "Now only fp16 and fp32 works.\n现在仅支持fp16和fp32。"}),
                 "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache clip model files to huggingface cache_dir or download into `ComfyUI\models\clip`.\nclip模型自动下载位置选择：huggingface缓存路径或者`ComfyUI\models\clip`。"}),
                 # "unet_for_merge": ("STRING", {"default": r"D:\AI\ComfyUI_windows_portable\ComfyUI\models\diffusers\models--SG161222--Realistic_Vision_V6.0_B1_noVAE\unet\diffusion_pytorch_model.bin", "multiline": False, "dynamicPrompts": False}), 
@@ -272,14 +277,15 @@ class AnyText_Model_Loader:
     TITLE = "AnyText Model Loader"
 
     # def UL_Image_Generation_AnyText_Params(self, ckpt_name, clip, translator, dtype, save_merged_dir, merge_model, unet_for_merge):
-    def Loader(self, ckpt_name, clip, dtype, Auto_Download_Path):
+    def Loader(self, ckpt_name, clip_name, dtype, Auto_Download_Path):
         dtype = get_dtype_by_name(dtype)
         ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
         cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models_yaml', 'anytext_sd15.yaml')
-        clip_path = os.path.join(folder_paths.models_dir, "clip", clip)
+        
+        clip_path = os.path.join(folder_paths.models_dir, "clip", clip_name) if os.path.exists(os.path.join(folder_paths.models_dir, "clip", clip_name)) else os.path.join(folder_paths.models_dir, "text_encoders", clip_name)
         if not os.path.exists(clip_path):
             if Auto_Download_Path:
-                clip_path = os.path.join(folder_paths.models_dir, "clip", 'models--openai--clip-vit-large-patch14')
+                clip_path = os.path.join(folder_paths.models_dir, "clip", 'models--openai--clip-vit-large-patch14') if os.path.exists(os.path.join(folder_paths.models_dir, "clip", 'models--openai--clip-vit-large-patch14')) else os.path.join(folder_paths.models_dir, "text_encoders", 'models--openai--clip-vit-large-patch14')
                 if not os.path.exists(os.path.join(clip_path, 'model.safetensors')):
                     download_repoid_model_from_huggingface("openai/clip-vit-large-patch14", clip_path, ignore_patterns=[".msgpack", ".bin", ".h5"])
             else:

@@ -38,7 +38,7 @@
 
 # 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
 
-## Limitations: result worse than original SDXL checkpoint, 
+## Limitations: background result worse than original SDXL checkpoint, image resolution locked at 1024x1024, input mask and image aspect ratio must be 1:1.
 
 ## Place Glyph-ByT5 checkpoints in `ComfyUI\custom_nodes\ComfyUI_Anytext\Image_Generation\Glyph_SDXL\checkpoints`
 

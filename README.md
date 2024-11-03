@@ -36,15 +36,15 @@
 ### Workflow in workflow dir:
 ![](./workflow/Anytext-wf.png)
 
-# 2、Glyph-SDXL: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
-
-## Warning: unload model function not work, use ComfyUI-Manager or other cunstom-nodes to unload.
+# 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
 
 ## Place Glyph-ByT5 checkpoints in `ComfyUI\custom_nodes\ComfyUI_Anytext\Image_Generation\Glyph_SDXL\checkpoints`
 
 ## Place `google/byt5-small` text_encoder into `ComfyUI\models\text_encoders` or select Auto_Download from huggingface.
 - https://huggingface.co/google/byt5-small
 - https://hf-mirror.com/google/byt5-small (China mainland users)
+
+## For inpaint checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`.
 
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-Glyph_SDXL-wf.png)

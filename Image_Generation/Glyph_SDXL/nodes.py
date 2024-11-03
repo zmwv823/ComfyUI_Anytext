@@ -13,11 +13,11 @@ import cv2
 current_dir = os.path.dirname(os.path.abspath(__file__))
 MAX_TEXT_BOX = 20
     
-class UL_Image_Generation_Glyph_SDXL_Sampler:
+class UL_Image_Generation_Glyph_ByT5_Sampler:
     @classmethod
     def INPUT_TYPES(s):
         return {
-            "required": { 
+            "required": {
                 "glyph_sdxl_model": ("Glyph_SDXL_Model", ),
                 "font_params": ("Glyph_SDXL_Font_Params", ),
                 "bg_prompt": ("STRING", {"default": "背景图提示词\nThe image features a green and blue globe with a factory on top of it. The factory is surrounded by trees, giving the impression of a harmonious coexistence between the industrial structure and the natural environment. The globe is prominently displayed in the center of the image, with the factory and trees surrounding it.\nor\nThe image features a beautiful young 20yo woman sitting in a field of flowers, holding a little cute girl in her arms. The scene is quite serene and picturesque, with the two human being the main focus of the image. The field is filled with various flowers, creating a beautiful and vibrant backdrop for the humans.", "multiline": True, "dynamicPrompts": True, "tooltip": "背景图提示词。"}),
@@ -54,15 +54,11 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
     RETURN_NAMES = ("latent",)
     FUNCTION = "UL_Image_Generation_Glyph_SDXL"
     CATEGORY = "UL Group/Image Generation"
-    TITLE = "Glyph-SDXL Sampler"
+    TITLE = "Glyph-ByT5 Sampler"
     DESCRIPTION = "Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering\nWe identify two crucial requirements of text encoders for achieving accurate visual text rendering: character awareness and alignment with glyphs. To this end, we propose a customized text encoder, Glyph-ByT5, by fine-tuning the character-aware ByT5 encoder using a meticulously curated paired glyph-text dataset.\nWe present an effective method for integrating Glyph-ByT5 with SDXL, resulting in the creation of the Glyph-SDXL model for design image generation. This significantly enhances text rendering accuracy, improving it from less than 20% to nearly 90% on our design image benchmark. Noteworthy is Glyph-SDXL's newfound ability for text paragraph rendering, achieving high spelling accuracy for tens to hundreds of characters with automated multi-line layouts.\nWe deliver a powerful customized multilingual text encoder, Glyph-ByT5-v2, and a strong aesthetic graphic generation model, Glyph-SDXL-v2, that can support accurate spelling in ∼10 different languages"
     
     def __init__(self) -> None:
         self.mode = None
-        self.vae = None
-        self.byt5_text_encoder = None
-        self.origin_module = None
-        self.Glyph_SDXL_pipe = None
         self.loaded_lora_scale = None
         self.loaded_prompt_and_bboxes = None
         self.loaded_embeds = None
@@ -196,7 +192,8 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
             from .Glyph_SDXL_Scripts.glyph_sdxl.custom_diffusers.pipelines.pipeline_stable_diffusion_glyph_xl import StableDiffusionGlyphXLPipeline
             
             pipe = StableDiffusionGlyphXLPipeline
-            self.vae = glyph_sdxl_model['diffusers_model']['vae']
+            if mode:
+                vae = glyph_sdxl_model['diffusers_model']['vae']
             if not mode:
                 from .Glyph_SDXL_Scripts.glyph_sdxl.custom_diffusers.pipelines.pipeline_stable_diffusion_glyph_xl_inpaint import StableDiffusionGlyphXLPipeline_Inpaint
                 
@@ -211,10 +208,10 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
                 vae = AutoencoderKL(**SDXL_VAE_fp16_fix_config)
                 vae.load_state_dict(state_dict, strict=False)
                 del state_dict
-                self.vae.to(glyph_sdxl_model['diffusers_model']['unet'].dtype)
+                vae.to(glyph_sdxl_model['diffusers_model']['unet'].dtype)
             
-            self.Glyph_SDXL_pipe = pipe(
-                vae=self.vae,
+            Glyph_SDXL_pipe = pipe(
+                vae=vae,
                 tokenizer=glyph_sdxl_model['diffusers_model']['clip']['tokenizer'],
                 tokenizer_2=glyph_sdxl_model['diffusers_model']['clip']['tokenizer_2'],
                 text_encoder=glyph_sdxl_model['diffusers_model']['clip']['text_encoder'],
@@ -269,7 +266,7 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
                     masked_image_latents = None
                     inp_strength = None
                 
-                image, self.loaded_lora_scale, self.loaded_prompt_and_bboxes, self.loaded_embeds, self.loaded_attn_masks_dicts, self.loaded_ip_adapter_img, self.loaded_image_embeds, self.loaded_clip_vision = self.Glyph_SDXL_pipe(
+                image, self.loaded_lora_scale, self.loaded_prompt_and_bboxes, self.loaded_embeds, self.loaded_attn_masks_dicts, self.loaded_ip_adapter_img, self.loaded_image_embeds, self.loaded_clip_vision = Glyph_SDXL_pipe(
                     width=width,
                     height=height,
                     debug=debug,
@@ -304,6 +301,7 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
             
             if not keep_model_loaded:
                 del glyph_sdxl_model['diffusers_model']['unet']
+                del glyph_sdxl_model['origin_module']
                 del glyph_sdxl_model['diffusers_model']['vae']
                 del glyph_sdxl_model['diffusers_model']['clip']
                 del glyph_sdxl_model['diffusers_model']['scheduler']
@@ -312,19 +310,18 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
                 del glyph_sdxl_model['byt5_text_encoder']
                 del glyph_sdxl_model['byt5_mapper']
                 del glyph_sdxl_model['byt5_tokenizer']
-                del self.Glyph_SDXL_pipe.unet
-                del self.Glyph_SDXL_pipe.vae
-                del self.Glyph_SDXL_pipe.tokenizer
-                del self.Glyph_SDXL_pipe.tokenizer_2
-                del self.Glyph_SDXL_pipe.text_encoder
-                del self.Glyph_SDXL_pipe.text_encoder_2
-                del self.Glyph_SDXL_pipe.byt5_mapper
-                del self.Glyph_SDXL_pipe.byt5_text_encoder
-                del self.Glyph_SDXL_pipe.byt5_tokenizer
-                del self.Glyph_SDXL_pipe.scheduler
-                del self.Glyph_SDXL_pipe
-                del self.vae
-                del self.byt5_text_encoder
+                del Glyph_SDXL_pipe.unet
+                del Glyph_SDXL_pipe.vae
+                del Glyph_SDXL_pipe.tokenizer
+                del Glyph_SDXL_pipe.tokenizer_2
+                del Glyph_SDXL_pipe.text_encoder
+                del Glyph_SDXL_pipe.text_encoder_2
+                del Glyph_SDXL_pipe.byt5_mapper
+                del Glyph_SDXL_pipe.byt5_text_encoder
+                del Glyph_SDXL_pipe.byt5_tokenizer
+                del Glyph_SDXL_pipe.scheduler
+                del Glyph_SDXL_pipe
+                del vae
                 clean_up()
             else:
                 if keep_model_device:
@@ -341,7 +338,7 @@ class UL_Image_Generation_Glyph_SDXL_Sampler:
         
         return (image, )    
     
-class UL_Image_Generation_Glyph_SDXL_Font:
+class UL_Image_Generation_Glyph_ByT5_Font:
     @classmethod
     def INPUT_TYPES(s):
         multi_font_idx_list = []
@@ -393,7 +390,7 @@ class UL_Image_Generation_Glyph_SDXL_Font:
     RETURN_NAMES = ("font_params", )
     FUNCTION = "UL_Image_Generation_Glyph_SDXL_Font"
     CATEGORY = "UL Group/Image Generation"
-    TITLE = "Glyph-SDXL Font"
+    TITLE = "Glyph-ByT5 Fonts"
     
     # OUTPUT_NODE = True
     # OUTPUT_IS_LIST = (False,)
@@ -443,7 +440,7 @@ class UL_Image_Generation_Glyph_SDXL_Font:
         # return (Glyph_SDXL_Font_params, )
         return (Glyph_SDXL_conditions, )
     
-class Glyph_SDXL_Checkponits_Loader():
+class Glyph_ByT5_Checkponits_Loader():
     @classmethod
     def INPUT_TYPES(cls):
         text_encoders_dir = os.path.join(folder_paths.models_dir, "text_encoders")
@@ -463,17 +460,10 @@ class Glyph_SDXL_Checkponits_Loader():
     RETURN_NAMES = ("glyph_sdxl_model",)
     FUNCTION = "loader"
     CATEGORY = "UL Group/Image Generation"
-    TITLE = "Glyph-SDXL Model Loader"
+    TITLE = "Glyph-ByT5 Model Loader"
     DESCRIPTION = "Patch unet and apply unet lora and load byt5 clip (text_encoder).\n给unet作patch并且应用lora并且加载byt5 clip (text_encoder)。"
-    
-    def __init__(self):
-        self.version = None
-        self.byt5_model = None
-        self.byt5_mapper = None
-        self.byt5_tokenizer = None
-        self.unet = None
 
-    def loader(self, version, clip_name, Auto_Download_Path, diffusers_model, debug=True):
+    def loader(self, version, clip_name, Auto_Download_Path, diffusers_model, debug=False):
         from .Glyph_SDXL_Scripts.glyph_sdxl.utils.parse_config import parse_config
         
         color_ann_path = os.path.join(current_dir, 'Glyph_SDXL_Scripts', 'assets', 'color_idx.json')
@@ -499,108 +489,105 @@ class Glyph_SDXL_Checkponits_Loader():
             else:
                 clip_path = "google/byt5-small"
         
-        if self.version != version or self.unet != diffusers_model['unet']:
-            self.version = version
-            self.unet = diffusers_model['unet']
-            from .Glyph_SDXL_Scripts.glyph_sdxl.utils.load_pretrained_byt5 import load_byt5_and_byt5_tokenizer
-            from .Glyph_SDXL_Scripts.glyph_sdxl.modules import T5EncoderBlockByT5Mapper
-            from .Glyph_SDXL_Scripts.glyph_sdxl.custom_diffusers.models import CrossAttnInsertBasicTransformerBlock
-            from diffusers.models.attention import BasicTransformerBlock
-            from peft import LoraConfig
-            from peft.utils import set_peft_model_state_dict
-            
-            if self.byt5_model == None:
-                self.byt5_model, self.byt5_tokenizer = load_byt5_and_byt5_tokenizer(
-                    byt5_name=clip_path, 
-                    color_ann_path=color_ann_path, 
-                    font_ann_path=font_ann_path, 
-                    **config.byt5_config)
-            
-            byt5_mapper_dict = [T5EncoderBlockByT5Mapper]
-            byt5_mapper_dict = {mapper.__name__: mapper for mapper in byt5_mapper_dict}
-            
-            self.byt5_mapper = byt5_mapper_dict[config.byt5_mapper_type](
-                self.byt5_model.config,
-                **config.byt5_mapper_config,
-            )
-            
-            inserted_new_modules_para_set = set()
-            unet_patch_steps = 0
-            if debug:
-                print('\033[93m', f'Start Unet Patch!', '\033[0m')
-            for name, module in diffusers_model['unet'].named_modules():
-                if isinstance(module, BasicTransformerBlock) and name in config.attn_block_to_modify:
-                    unet_patch_steps += 1
-                    parent_module = diffusers_model['unet']
-                    for n in name.split(".")[:-1]:
-                        parent_module = getattr(parent_module, n)
-                    new_block = CrossAttnInsertBasicTransformerBlock.from_transformer_block(
-                        module,
-                        self.byt5_model.config.d_model if config.byt5_mapper_config.sdxl_channels is None else config.byt5_mapper_config.sdxl_channels,
-                    )
-                    new_block.requires_grad_(False)
-                    for inserted_module_name, inserted_module in zip(
-                        new_block.get_inserted_modules_names(), 
-                        new_block.get_inserted_modules()
-                    ):
-                        inserted_module.requires_grad_(True)
-                        for para_name, para in inserted_module.named_parameters():
-                            para_key = name + '.' + inserted_module_name + '.' + para_name
-                            assert para_key not in inserted_new_modules_para_set
-                            inserted_new_modules_para_set.add(para_key)
-                    for origin_module in new_block.get_origin_modules():
-                        origin_module.to(diffusers_model['unet'].dtype)
-                    parent_module.register_module(name.split(".")[-1], new_block)
-                    print(f"inserted cross attn block to {name}")
-                    
-            if debug:
-                    print('\033[93m', f'Unet Patch Completed! Total blocks: {unet_patch_steps}', '\033[0m')
+        from .Glyph_SDXL_Scripts.glyph_sdxl.utils.load_pretrained_byt5 import load_byt5_and_byt5_tokenizer
+        from .Glyph_SDXL_Scripts.glyph_sdxl.modules import T5EncoderBlockByT5Mapper
+        from .Glyph_SDXL_Scripts.glyph_sdxl.custom_diffusers.models import CrossAttnInsertBasicTransformerBlock
+        from diffusers.models.attention import BasicTransformerBlock
+        from peft import LoraConfig
+        from peft.utils import set_peft_model_state_dict
+        
+        byt5_model, byt5_tokenizer = load_byt5_and_byt5_tokenizer(
+            byt5_name=clip_path, 
+            color_ann_path=color_ann_path, 
+            font_ann_path=font_ann_path, 
+            **config.byt5_config)
+        
+        byt5_mapper_dict = [T5EncoderBlockByT5Mapper]
+        byt5_mapper_dict = {mapper.__name__: mapper for mapper in byt5_mapper_dict}
+        
+        byt5_mapper = byt5_mapper_dict[config.byt5_mapper_type](
+            byt5_model.config,
+            **config.byt5_mapper_config,
+        )
+        
+        inserted_new_modules_para_set = set()
+        unet_patch_steps = 0
+        if debug:
+            print('\033[93m', f'Start Unet Patch!', '\033[0m')
+        for name, module in diffusers_model['unet'].named_modules():
+            if isinstance(module, BasicTransformerBlock) and name in config.attn_block_to_modify:
+                unet_patch_steps += 1
+                parent_module = diffusers_model['unet']
+                for n in name.split(".")[:-1]:
+                    parent_module = getattr(parent_module, n)
+                new_block = CrossAttnInsertBasicTransformerBlock.from_transformer_block(
+                    module,
+                    byt5_model.config.d_model if config.byt5_mapper_config.sdxl_channels is None else config.byt5_mapper_config.sdxl_channels,
+                )
+                new_block.requires_grad_(False)
+                for inserted_module_name, inserted_module in zip(
+                    new_block.get_inserted_modules_names(), 
+                    new_block.get_inserted_modules()
+                ):
+                    inserted_module.requires_grad_(True)
+                    for para_name, para in inserted_module.named_parameters():
+                        para_key = name + '.' + inserted_module_name + '.' + para_name
+                        assert para_key not in inserted_new_modules_para_set
+                        inserted_new_modules_para_set.add(para_key)
+                for origin_module in new_block.get_origin_modules():
+                    origin_module.to(diffusers_model['unet'].dtype)
+                parent_module.register_module(name.split(".")[-1], new_block)
+                print(f"inserted cross attn block to {name}")
                 
-            unet_lora_target_modules = [
-                "attn1.to_k", "attn1.to_q", "attn1.to_v", "attn1.to_out.0",
-                "attn2.to_k", "attn2.to_q", "attn2.to_v", "attn2.to_out.0",
-            ]
-            unet_lora_config = LoraConfig(
-                r=config.unet_lora_rank,
-                lora_alpha=config.unet_lora_rank,
-                init_lora_weights="gaussian",
-                target_modules=unet_lora_target_modules,
-            )
-            diffusers_model['unet'].add_adapter(unet_lora_config)
+        if debug:
+                print('\033[93m', f'Unet Patch Completed! Total blocks: {unet_patch_steps}', '\033[0m')
             
-            state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'unet_lora.pt'), safe_load=True)
-            incompatible_keys = set_peft_model_state_dict(diffusers_model['unet'], state_dict, adapter_name="default")
-            if getattr(incompatible_keys, 'unexpected_keys', []) == []:
-                print(f"loaded unet_lora_layers_para_multilingual")
-            else:
-                print(f"unet_lora_layers_multilingual has unexpected_keys: {getattr(incompatible_keys, 'unexpected_keys', None)}")
-            
-            state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'unet_inserted_attn.pt'), safe_load=True)
-            missing_keys, unexpected_keys = diffusers_model['unet'].load_state_dict(state_dict, strict=False)
-            assert len(unexpected_keys) == 0, unexpected_keys
-            
-            state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'byt5_mapper.pt'), safe_load=True)
-            self.byt5_mapper.load_state_dict(state_dict)
-            
-            state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'byt5_model.pt'), safe_load=True)
-            self.byt5_model.load_state_dict(state_dict)
-            del state_dict
+        unet_lora_target_modules = [
+            "attn1.to_k", "attn1.to_q", "attn1.to_v", "attn1.to_out.0",
+            "attn2.to_k", "attn2.to_q", "attn2.to_v", "attn2.to_out.0",
+        ]
+        unet_lora_config = LoraConfig(
+            r=config.unet_lora_rank,
+            lora_alpha=config.unet_lora_rank,
+            init_lora_weights="gaussian",
+            target_modules=unet_lora_target_modules,
+        )
+        diffusers_model['unet'].add_adapter(unet_lora_config)
+        
+        state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'unet_lora.pt'), safe_load=True)
+        incompatible_keys = set_peft_model_state_dict(diffusers_model['unet'], state_dict, adapter_name="default")
+        if getattr(incompatible_keys, 'unexpected_keys', []) == []:
+            print(f"loaded unet_lora_layers_para_multilingual")
+        else:
+            print(f"unet_lora_layers_multilingual has unexpected_keys: {getattr(incompatible_keys, 'unexpected_keys', None)}")
+        
+        state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'unet_inserted_attn.pt'), safe_load=True)
+        missing_keys, unexpected_keys = diffusers_model['unet'].load_state_dict(state_dict, strict=False)
+        assert len(unexpected_keys) == 0, unexpected_keys
+        
+        state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'byt5_mapper.pt'), safe_load=True)
+        byt5_mapper.load_state_dict(state_dict)
+        
+        state_dict = load_torch_file(os.path.join(Glyph_SDXL_checkpoints_dir, 'byt5_model.pt'), safe_load=True)
+        byt5_model.load_state_dict(state_dict)
+        del state_dict
             
         glyph_sdxl_model = {
             'diffusers_model': diffusers_model,
-            'byt5_text_encoder': self.byt5_model,
-            'byt5_tokenizer': self.byt5_tokenizer,
-            'byt5_mapper': self.byt5_mapper,
+            'byt5_text_encoder': byt5_model,
+            'byt5_tokenizer': byt5_tokenizer,
+            'byt5_mapper': byt5_mapper,
             'byt5_max_length': config.byt5_max_length,
             'version': version,
+            'origin_module': origin_module,
         }
         
         return (glyph_sdxl_model, )
     
 NODE_CLASS_MAPPINGS = {
-    "UL_Image_Generation_Glyph_SDXL": UL_Image_Generation_Glyph_SDXL_Sampler,
-    "UL_Image_Generation_Glyph_SDXL_Font": UL_Image_Generation_Glyph_SDXL_Font,
-    "UL_Image_Generation_Glyph_SDXL_Model_Loader": Glyph_SDXL_Checkponits_Loader,
+    "UL_Image_Generation_Glyph_ByT5": UL_Image_Generation_Glyph_ByT5_Sampler,
+    "UL_Image_Generation_Glyph_ByT5_Font": UL_Image_Generation_Glyph_ByT5_Font,
+    "UL_Image_Generation_Glyph_ByT5_Checkponits_Loader": Glyph_ByT5_Checkponits_Loader,
 }
 
 multilingual_code_dict = {

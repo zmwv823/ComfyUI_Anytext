@@ -1,6 +1,6 @@
 import os
 import folder_paths
-from .common import get_dtype_by_name, clean_up
+from .common import get_dtype_by_name
 
 class UL_Common_Diffusers_Checkpoint_Loader:
     @classmethod
@@ -19,21 +19,8 @@ class UL_Common_Diffusers_Checkpoint_Loader:
     CATEGORY = "UL Group/Common Loader"
     TITLE = "Diffuers Load Checkponit"
     DESCRIPTION = "Use diffusers library to load single_file checkpoint, now support sd1.5、sd2.1 and sdxl, recognize model type by size (1.5GB < sd1.5 & sd2.1 < 6GB, 6GB < sdxl < 7GB)、inapint (inpaint in ckpt_name) and sd2.1 (sd21 in ckpt_name)."
-    
-    def __init__(self):
-        self.ckpt_name = None
-        self.pipeline = None
-        self.unet = None
-        self.vae = None
-        self.clip = None
 
     def UL_Common_Diffusers_Checkpoint_Loader(self, ckpt_name, dtype, debug=True, unet_only=False):
-        if self.ckpt_name != ckpt_name:
-            del self.unet
-            del self.vae
-            del self.clip
-            del self.pipeline
-            clean_up()
         
         dtype = get_dtype_by_name(dtype)
         ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
@@ -63,14 +50,14 @@ class UL_Common_Diffusers_Checkpoint_Loader:
                     else:
                         print('\033[93m', 'Load sd1.5 unet.', '\033[0m')
                 from diffusers import UNet2DConditionModel
-                self.unet = UNet2DConditionModel.from_single_file(
+                unet = UNet2DConditionModel.from_single_file(
                     pretrained_model_link_or_path_or_dict=ckpt_path,
                     original_config=original_config_path,
                     torch_dtype=dtype,
                 )
-                self.pipeline = None
-                self.clip = None
-                self.vae = None
+                pipeline = None
+                clip = None
+                vae = None
                 scheduler = None
             else:
                 if debug:
@@ -80,7 +67,7 @@ class UL_Common_Diffusers_Checkpoint_Loader:
                         print('\033[93m', '`sd21` in checkpoint name, load sd2.1 checkpoint.', '\033[0m')
                     else:
                         print('\033[93m', 'Load sd1.5 checkpoint.', '\033[0m')
-                self.pipeline = pipe.from_single_file(
+                pipeline = pipe.from_single_file(
                     pretrained_model_link_or_path=ckpt_path,
                     config=config_dir, 
                     original_config=original_config_path,
@@ -88,16 +75,16 @@ class UL_Common_Diffusers_Checkpoint_Loader:
                     safety_checker=None,
                     torch_dtype=dtype,
                 )
-                self.pipeline.tokenizer_2 = None
-                self.pipeline.text_encoder_2 = None
-                self.unet = self.pipeline.unet
-                self.vae = self.pipeline.vae
-                scheduler = self.pipeline.scheduler
-                self.clip = {
-                    "tokenizer": self.pipeline.tokenizer,
-                    "tokenizer_2": self.pipeline.tokenizer_2,
-                    "text_encoder": self.pipeline.text_encoder,
-                    "text_encoder_2": self.pipeline.text_encoder_2,
+                pipeline.tokenizer_2 = None
+                pipeline.text_encoder_2 = None
+                unet = pipeline.unet
+                vae = pipeline.vae
+                scheduler = pipeline.scheduler
+                clip = {
+                    "tokenizer": pipeline.tokenizer,
+                    "tokenizer_2": pipeline.tokenizer_2,
+                    "text_encoder": pipeline.text_encoder,
+                    "text_encoder_2": pipeline.text_encoder_2,
                 }
         elif 6442450944 < (os.stat(ckpt_path)).st_size < 7516192768: # 6GB<ckpt_size<7GB, sdxl
             from diffusers import StableDiffusionXLPipeline, StableDiffusionXLInpaintPipeline
@@ -119,14 +106,14 @@ class UL_Common_Diffusers_Checkpoint_Loader:
                     else:
                         print('\033[93m', 'Load sdxl unet.', '\033[0m')
                 from diffusers import UNet2DConditionModel
-                self.unet = UNet2DConditionModel.from_single_file(
+                unet = UNet2DConditionModel.from_single_file(
                     pretrained_model_link_or_path_or_dict=ckpt_path,
                     original_config=original_config_path,
                     torch_dtype=dtype,
                 )
-                self.pipeline = None
-                self.clip = None
-                self.vae = None
+                pipeline = None
+                clip = None
+                vae = None
                 scheduler = None
             else:
                 if debug:
@@ -134,33 +121,31 @@ class UL_Common_Diffusers_Checkpoint_Loader:
                         print('\033[93m', '`inpaint` in checkpoint name, load sdxl inpainting checkpoint.', '\033[0m')
                     else:
                         print('\033[93m', 'Load sdxl checkpoint.', '\033[0m')
-                self.pipeline = pipe.from_single_file(
+                pipeline = pipe.from_single_file(
                     pretrained_model_link_or_path=ckpt_path,
                     config=config_dir,
                     original_config=original_config_path,
                     torch_dtype=dtype,
                 )
-                self.unet = self.pipeline.unet
-                self.vae = self.pipeline.vae
-                scheduler = self.pipeline.scheduler
-                self.clip = {
-                    "tokenizer": self.pipeline.tokenizer,
-                    "tokenizer_2": self.pipeline.tokenizer_2,
-                    "text_encoder": self.pipeline.text_encoder,
-                    "text_encoder_2": self.pipeline.text_encoder_2,
+                unet = pipeline.unet
+                vae = pipeline.vae
+                scheduler = pipeline.scheduler
+                clip = {
+                    "tokenizer": pipeline.tokenizer,
+                    "tokenizer_2": pipeline.tokenizer_2,
+                    "text_encoder": pipeline.text_encoder,
+                    "text_encoder_2": pipeline.text_encoder_2,
                 }
         elif 'flash-mini' in ckpt_path or 'Flash_Mini' in ckpt_path:
             raise ValueError(f'sdxl-flash-mini checkpoint not supported in diffusers.')
         else:
             raise ValueError(f'Can not recognize model type.')
         
-        self.ckpt_name = ckpt_name
-        
         model = {
-            'pipe': self.pipeline, 
-            'unet': self.unet, 
-            'clip': self.clip, 
-            'vae': self.vae, 
+            'pipe': pipeline, 
+            'unet': unet, 
+            'clip': clip, 
+            'vae': vae, 
             'scheduler': scheduler,
         }
         

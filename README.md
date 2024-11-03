@@ -12,7 +12,7 @@
 ### Modelscope:
 - https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/resolve/master/anytext_v1.1.ckpt
 
-## Clip model: select Auto_Download from huggingface or manual download or git clone from huggingface or modelscope.
+## Clip model: select Auto_Download from huggingface or manual download or git clone from huggingface or modelscope into `ComfyUI\models\text_encoders`.
 ### Huggingface:
 - https://huggingface.co/openai/clip-vit-large-patch14
 - https://hf-mirror.com/openai/clip-vit-large-patch14 (China mainland users)

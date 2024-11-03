@@ -352,3 +352,69 @@ def cv2img_canny(img, low_threshold=64, high_threshold=100):
     img = img[:, :, None]
     img = np.concatenate([img, img, img], axis=2)
     return Image.fromarray(img)
+
+Scheduler_Names = ["Euler", "Euler Karras", "Euler a", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE", "DPM++ 2M SDE Karras", "DDIM", "UniPC", "UniPC Karras", "DPM++ SDE", "DPM++ SDE Karras", "DPM2", "DPM2 Karras", "DPM2 a", "DPM2 a Karras", "Heun", "Heun Karras", "LMS", "LMS Karras", "TCD", "LCM", "IPNDM", "DEIS", "DEIS Karras", "DDPM"]
+
+def SDXL_Scheduler_List():
+    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, IPNDMScheduler, DEISMultistepScheduler, DDPMScheduler
+    schedulers = {
+            "Euler": EulerDiscreteScheduler(),
+            "Euler Karras": EulerDiscreteScheduler(use_karras_sigmas=True),
+            "Euler a": EulerAncestralDiscreteScheduler(),
+            "DPM++ 2M": DPMSolverMultistepScheduler(),
+            "DPM++ 2M Karras": DPMSolverMultistepScheduler(use_karras_sigmas=True),
+            "DPM++ 2M SDE": DPMSolverMultistepScheduler(algorithm_type="sde-dpmsolver++"),
+            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler(use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
+            "DDIM": DDIMScheduler(),
+            "UniPC": UniPCMultistepScheduler(),
+            "UniPC Karras": UniPCMultistepScheduler(use_karras_sigmas=True),
+            "DPM++ SDE": DPMSolverSinglestepScheduler(),
+            "DPM++ SDE Karras": DPMSolverSinglestepScheduler(use_karras_sigmas=True),
+            "DPM2": KDPM2DiscreteScheduler(),
+            "DPM2 Karras": KDPM2DiscreteScheduler(use_karras_sigmas=True),
+            "DPM2 a": KDPM2AncestralDiscreteScheduler(),
+            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler(use_karras_sigmas=True),
+            "Heun": HeunDiscreteScheduler(),
+            "Heun Karras": HeunDiscreteScheduler(use_karras_sigmas=True),
+            "LMS": LMSDiscreteScheduler(),
+            "LMS Karras": LMSDiscreteScheduler(use_karras_sigmas=True),
+            "TCD": TCDScheduler(),
+            "LCM": LCMScheduler(),
+            "IPNDM": IPNDMScheduler(),
+            "DEIS": DEISMultistepScheduler(),
+            "DEIS Karras": DEISMultistepScheduler(use_karras_sigmas=True),
+            "DDPM": DDPMScheduler(),
+        }
+    return schedulers
+
+def cv2pil(cv2_img):
+    """
+        OpenCV转换成PIL.Image RGB格式.
+    """
+    img = Image.fromarray(cv2.cvtColor(cv2_img,cv2.COLOR_BGR2RGB))
+    return img
+
+def seperate_masks(mask, sort_priority, gap=102):
+    """
+    从一张多个不重叠遮罩图中分离多个遮罩，排序位置不是很准确，后期坐标需要重新按x_min、y_min值由小到大排序。
+    Args:
+        mask: 输入cv2掩膜二值图。
+        sort_priority: 排序方向 '↔' ，水平或者垂直 '↕' 。
+        gap (int, optional): _description_. Defaults to 102.
+
+    Returns:
+        sorted_components: 输出多个单mask图，类型为list，例如np.array(sorted_components[0])就是一张二值图。
+    """
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
+    components = []
+    for label in range(1, num_labels):
+        component = np.zeros_like(mask)
+        component[labels == label] = 255
+        components.append((component, centroids[label]))
+    if sort_priority == '↕':
+        fir, sec = 1, 0  # top-down first
+    elif sort_priority == '↔':
+        fir, sec = 0, 1  # left-right first
+    components.sort(key=lambda c: (c[1][fir]//gap, c[1][sec]//gap))
+    sorted_components = [c[0] for c in components]
+    return sorted_components

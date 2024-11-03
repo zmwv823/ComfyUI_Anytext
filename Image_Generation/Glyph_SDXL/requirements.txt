@@ -1,0 +1,6 @@
+diffusers
+mmengine
+accelerate
+deepspeed
+peft
+webcolors

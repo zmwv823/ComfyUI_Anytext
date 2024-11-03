@@ -1,3 +1,4 @@
+# AnyText
 pillow>=9.5.0
 numpy<=1.26.4 #numpy<2
 opencv-python
@@ -8,3 +9,9 @@ ujson
 omegaconf
 easydict
 open_clip_torch
+
+# Glypg-SDXL
+diffusers
+mmengine
+peft
+webcolors

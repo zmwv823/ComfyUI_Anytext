@@ -1,7 +1,8 @@
-Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
-
 # Look at the node tooltip for instrction.
-# Improved custom_node from my codes before.
+
+# 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
+
+## Improved custom_node from my codes before.
 ## AnyText Checkpoint: select Auto_Download from huggingface or manual download from huggingface or modelscope.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors
@@ -34,3 +35,16 @@ Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Edi
 
 ### Workflow in workflow dir:
 ![](./workflow/Anytext-wf.png)
+
+# 2、Glyph-SDXL: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
+
+## Warning: unload model function not work, use ComfyUI-Manager or other cunstom-nodes to unload.
+
+## Place Glyph-ByT5 checkpoints in `ComfyUI\custom_nodes\ComfyUI_Anytext\Image_Generation\Glyph_SDXL\checkpoints`
+
+## Place `google/byt5-small` text_encoder into `ComfyUI\models\text_encoders` or select Auto_Download from huggingface.
+- https://huggingface.co/google/byt5-small
+- https://hf-mirror.com/google/byt5-small (China mainland users)
+
+### Workflow in workflow dir:
+![](./workflow/Img_Gen-Glyph_SDXL-wf.png)

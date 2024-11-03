@@ -1,0 +1,9 @@
+ComfyUI-Node:
+
+
+Original Repo:
+https://github.com/AIGText/Glyph-ByT5
+
+Huggingface:
+https://huggingface.co/spaces/LPDoctor/Glyph-SDXL-v2
+https://huggingface.co/spaces/bghira/Glyph-SDXL-v2

@@ -25,7 +25,7 @@ else:
 	NODE_CLASS_MAPPINGS.update(AnyText_Nodes)
  
   ## Glyph-SDXL
-	from .Image_Generation.Glyph_SDXL.nodes import NODE_CLASS_MAPPINGS as Glyph_SDXL_Nodes
+	from .Image_Generation.Glyph_ByT5.nodes import NODE_CLASS_MAPPINGS as Glyph_SDXL_Nodes
 	NODE_CLASS_MAPPINGS.update(Glyph_SDXL_Nodes)
 
 # Image Process 

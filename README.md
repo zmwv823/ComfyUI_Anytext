@@ -38,6 +38,8 @@
 
 # 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
 
+## Limitations: result worse than original SDXL checkpoint, 
+
 ## Place Glyph-ByT5 checkpoints in `ComfyUI\custom_nodes\ComfyUI_Anytext\Image_Generation\Glyph_SDXL\checkpoints`
 
 ## Place `google/byt5-small` text_encoder into `ComfyUI\models\text_encoders` or select Auto_Download from huggingface.
@@ -47,4 +49,4 @@
 ## For inpaint checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`.
 
 ### Workflow in workflow dir:
-![](./workflow/Img_Gen-Glyph_SDXL-wf.png)
+![](./workflow/Img_Gen-Glyph_Byt5-wf.png)

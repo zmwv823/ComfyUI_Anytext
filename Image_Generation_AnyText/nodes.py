@@ -260,10 +260,10 @@ class AnyText_Model_Loader:
                 text_encoder_list.append(folder)
         return {
             "required": {
-                "ckpt_name": (['Auto_DownLoad'] + checkpoints_list, {"tooltip": "Must be AnyText pretained checkpoint, other SD1.5 base model doesn't work. If Auto_Download selected, fp16 checkpoint will download from huggingface into `ComfyUI\models\checkpoints\15` and rename to `anytext_v1.1.safetensors`.\n只支持AnyText预训练模型，其他SD1.5模型无效。如果选择自动下载(Auto_DownLoad)且以前没下载过，基座模型会下载到`ComfyUI\models\checkpoints\15`。"}),
-                "clip_name": (["Auto_DownLoad"] + text_encoder_list, {"tooltip": "If Auto_Download selected, clip model files will cached (Auto_Download_Path not checked) or download into `ComfyUI\models\text_encoders` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件将下载到`ComfyUI\models\text_encoders`，否则缓存到huggingface缓存路径。"}),
+                "ckpt_name": (['Auto_DownLoad'] + checkpoints_list, {"tooltip": "Must be AnyText pretained checkpoint, other SD1.5 base model doesn't work. If Auto_Download selected, fp16 checkpoint will download from huggingface into `ComfyUI/models/checkpoints/15` and rename to `anytext_v1.1.safetensors`.\n只支持AnyText预训练模型，其他SD1.5模型无效。如果选择自动下载(Auto_DownLoad)且以前没下载过，基座模型会下载到`ComfyUI/models/checkpoints/15`。"}),
+                "clip_name": (["Auto_DownLoad"] + text_encoder_list, {"tooltip": "If Auto_Download selected, clip model files will cached (Auto_Download_Path not checked) or download into `ComfyUI/models/text_encoders` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件将下载到`ComfyUI/models/text_encoders`，否则缓存到huggingface缓存路径。"}),
                 "dtype": (["auto", "fp16", "fp32", "bf16", "fp8_e4m3fn", "fp8_e4m3fnuz", "fp8_e5m2", "fp8_e5m2fnuz"],{"default":"auto", "tooltip": "Now only fp16 and fp32 works.\n现在仅支持fp16和fp32。"}),
-                "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache clip model files to huggingface cache_dir or download into `ComfyUI\models\text_encoders`.\nclip模型自动下载位置选择：huggingface缓存路径或者`ComfyUI\models\text_encoders`。"}),
+                "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache clip model files to huggingface cache_dir or download into `ComfyUI/models/text_encoders`.\nclip模型自动下载位置选择：huggingface缓存路径或者`ComfyUI/models/text_encoders`。"}),
                 # "unet_for_merge": ("STRING", {"default": r"D:\AI\ComfyUI_windows_portable\ComfyUI\models\diffusers\models--SG161222--Realistic_Vision_V6.0_B1_noVAE\unet\diffusion_pytorch_model.bin", "multiline": False, "dynamicPrompts": False}), 
                 # "save_merged_dir": ("STRING", {"default": r"C:\Users\pc\Desktop\merged_AnyText_unet.safetensors", "multiline": False, "dynamicPrompts": False}), 
                 # "merge_unet": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
@@ -331,7 +331,7 @@ class AnyText_Params:
         return {
             "required": {
                 "font_name": (['Auto_DownLoad'] + [file for file in self.font_files], {"default": "AnyText-Arial-Unicode.ttf"}),
-                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI\custom_nodes\ComfyUI_Anytext\requirements-with-nlp-translator.txt`，其余不建议。"}), 
+                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI/custom_nodes/ComfyUI_Anytext/requirements-with-nlp-translator.txt`，其余不建议。"}), 
                 "translator_device": (["auto", "cuda", "cpu", "mps", "xpu"],{"default": "auto"}), 
                 "keep_translator_loaded": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
                 "keep_translator_device": ("BOOLEAN", {"default": True, "label_on": "cpu", "label_off": "device"}),

@@ -437,7 +437,6 @@ class UL_Image_Generation_Glyph_ByT5_Font:
             font_name16, font_name17, font_name18, font_name19, font_name20
             )
         
-        # return (Glyph_SDXL_Font_params, )
         return (Glyph_SDXL_conditions, )
     
 class Glyph_ByT5_Checkponits_Loader():
@@ -448,9 +447,9 @@ class Glyph_ByT5_Checkponits_Loader():
         return {
             "required": {
                 "diffusers_model": ("Diffusers_Model", ),
-                "clip_name": (["Auto_DownLoad"] + clip_folders, {"tooltip": "If Auto_Download selected, clip model files `google/byt5-small` will cached (Auto_Download_Path not checked) or download into `ComfyUI\models\text_encoders` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件 `google/byt5-small`将下载到`ComfyUI\models\text_encoders`，否则缓存到huggingface缓存路径。"}),
+                "clip_name": (["Auto_DownLoad"] + clip_folders, {"tooltip": "If Auto_Download selected, clip model files `google/byt5-small` will cached (Auto_Download_Path not checked) or download into `ComfyUI/models/text_encoders` (Auto_Download_Path checked).\n如果选择自动下载(Auto_DownLoad)且以前没下载过并且勾选(Auto_Download_Path)下载到本地，clip模型文件 `google/byt5-small`将下载到`ComfyUI/models/text_encoders`，否则缓存到huggingface缓存路径。"}),
                 "version": ("BOOLEAN", {"default": True, "label_on": "v2", "label_off": "v1", "tooltip": "V2 for 10 languages, v1 just for English."}),
-                "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache clip model files to huggingface cache_dir or download into `ComfyUI\models\text_encoders`.\nclip模型自动下载位置选择：huggingface缓存路径或者`ComfyUI\models\text_encoders`。"}),
+                "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache clip model files to huggingface cache_dir or download into `ComfyUI/models/text_encoders`.\nclip模型自动下载位置选择：huggingface缓存路径或者`ComfyUI/models/text_encoders`。"}),
             },
             "optional":{
             },

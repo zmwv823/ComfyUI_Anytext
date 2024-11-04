@@ -2,7 +2,7 @@
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
 
-## Improved custom_node from my codes before.
+## Improved custom_node from my older custom_node (repo deleted).
 ## AnyText Checkpoint: select Auto_Download from huggingface or manual download from huggingface or modelscope.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors

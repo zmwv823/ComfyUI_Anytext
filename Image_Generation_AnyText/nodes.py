@@ -20,6 +20,7 @@ class UL_Image_Generation_AnyText:
             "required": {
                 "anytext_model": ("AnyText_Model", ),
                 "anytext_params": ("AnyText_Params", ),
+                "pos_mask": ("MASK", {"forceInput": True}),
                 "prompt": ("STRING", {"default": "A realistic photo with text “UL Group” in the background, a richly decorated cake with cream “阿里云” and “APSARA”。", "multiline": True}),
                 "a_prompt": ("STRING", {"default": "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks", "multiline": True}),
                 "n_prompt": ("STRING", {"default": "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture", "multiline": True}),
@@ -42,7 +43,6 @@ class UL_Image_Generation_AnyText:
             },
             "optional": {
                         "ori_image": ("IMAGE", {"forceInput": True}),
-                        "pos_mask": ("MASK", {"forceInput": True}),
                         },
         }
 
@@ -64,7 +64,6 @@ class UL_Image_Generation_AnyText:
         anytext_model,
         anytext_params,
         mode,
-        ori_image,
         pos_mask,
         sort_radio,
         revise_pos,
@@ -83,6 +82,7 @@ class UL_Image_Generation_AnyText:
         n_prompt="", 
         width=512, 
         height=512,
+        ori_image=None,
     ):    
         device = get_device_by_name(device)  
         dtype = anytext_model['model'].dtype
@@ -149,15 +149,15 @@ class UL_Image_Generation_AnyText:
         pos_image = cv2.cvtColor(pos_image, cv2.COLOR_GRAY2RGB) # cv2二值图(mask)转rgb
         pos_image = cv2.bitwise_not(pos_image) # cv2图片取反
         
-        ori_image = tensor2numpy_cv2(ori_image)
-        ori_image = resize_image(ori_image, max(width, height))
-        ori_image = cv2.cvtColor(ori_image, cv2.COLOR_BGR2RGB)
-            
         if mode:
             mode = 'text-generation'
-            ori_image = None
             revise_pos = revise_pos
         else:
+            if ori_image == None:
+                raise ValueError('Edit mode need a image.')
+            ori_image = tensor2numpy_cv2(ori_image)
+            ori_image = resize_image(ori_image, max(width, height))
+            ori_image = cv2.cvtColor(ori_image, cv2.COLOR_BGR2RGB)
             mode = 'text-editing'
             revise_pos = False
             
@@ -274,7 +274,7 @@ class AnyText_Model_Loader:
     RETURN_NAMES = ("anytext_model", "ckpt_name", )
     FUNCTION = "Loader"
     CATEGORY = "UL Group/Image Generation"
-    TITLE = "AnyText Model Loader"
+    TITLE = "AnyText Checkpoint Loader"
 
     # def UL_Image_Generation_AnyText_Params(self, ckpt_name, clip, translator, dtype, save_merged_dir, merge_model, unet_for_merge):
     def Loader(self, ckpt_name, clip_name, dtype, Auto_Download_Path):
@@ -331,7 +331,7 @@ class AnyText_Params:
         return {
             "required": {
                 "font_name": (['Auto_DownLoad'] + [file for file in self.font_files], {"default": "AnyText-Arial-Unicode.ttf"}),
-                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI/custom_nodes/ComfyUI_Anytext/requirements-with-nlp-translator.txt`，其余不建议。"}), 
+                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI\custom_nodes\ComfyUI_Anytext\requirements-with-nlp-translator.txt`，其余不建议。"}), 
                 "translator_device": (["auto", "cuda", "cpu", "mps", "xpu"],{"default": "auto"}), 
                 "keep_translator_loaded": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
                 "keep_translator_device": ("BOOLEAN", {"default": True, "label_on": "cpu", "label_off": "device"}),

@@ -17,7 +17,7 @@ class UL_Common_Diffusers_Checkpoint_Loader:
     RETURN_NAMES = ("diffusers_model", "ckpt_name", )
     FUNCTION = "UL_Common_Diffusers_Checkpoint_Loader"
     CATEGORY = "UL Group/Common Loader"
-    TITLE = "Diffuers Load Checkponit"
+    TITLE = "Diffusers Load Checkpoint"
     DESCRIPTION = "Use diffusers library to load single_file checkpoint, now support sd1.5、sd2.1 and sdxl, recognize model type by size (1.5GB < sd1.5 & sd2.1 < 6GB, 6GB < sdxl < 7GB)、inapint (inpaint in ckpt_name) and sd2.1 (sd21 in ckpt_name)."
 
     def UL_Common_Diffusers_Checkpoint_Loader(self, ckpt_name, dtype, debug=True, unet_only=False):

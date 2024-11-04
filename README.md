@@ -46,7 +46,7 @@
 - https://huggingface.co/google/byt5-small
 - https://hf-mirror.com/google/byt5-small (China mainland users)
 
-## For inpaint checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`.
+## For sdxl checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl_base.yaml) and [inapint_original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`.
 
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-Glyph_ByT5-wf.png)

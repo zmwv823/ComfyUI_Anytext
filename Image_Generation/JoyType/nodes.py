@@ -6,6 +6,7 @@ import cv2
 import folder_paths
 import torch
 from comfy.model_management import vae_offload_device, unet_offload_device, text_encoder_offload_device
+Scheduler_Names.pop(22) # or del Scheduler_Names[22] or Scheduler_Names.remove("IPNDM") 删除不可用调度器，第23个调度器："IPNDM"。
 
 class UL_Image_Generation_JoyType_Render_List:
     @classmethod
@@ -39,9 +40,6 @@ class UL_Image_Generation_JoyType_Render_List:
     CATEGORY = "UL Group/Image Generation"
     TITLE = "JoyType List"
     DESCRIPTION = ""
-
-    def __init__(self):
-        pass
 
     def UL_Image_Generation_JoyType_Render_List(self, mask, font1, text1, font2=None, text2=None, font3=None, text3=None, font4=None, text4=None, font5=None, text5=None, font6=None, text6=None, font7=None, text7=None, font8=None, text8=None, font9=None, text9=None, font10=None, text10=None, sort_radio=True, mask_gap=102):
         
@@ -124,10 +122,6 @@ class UL_Image_Generation_JoyType_Font_Img:
             "bg_color_code": ("STRING",{"default": "00ffdd"}), 
             "bg_color_mode": ("BOOLEAN", {"default": True, "label_on": "color_name", "label_off": "color_code"}), 
         }, 
-        # "optional": {
-        #     "list2": ("JoyType_Render_List", ),
-        #     "list3": ("JoyType_Render_List", ),
-        #     }
         }
 
     RETURN_TYPES = ("IMAGE", "IMAGE", )
@@ -179,8 +173,8 @@ class UL_Image_Generation_Diffusers_Sampler:
                 "steps": ("INT", {"default": 20, "min": 1, "max": 100}),
                 "cfg": ("FLOAT", {"default": 7.5, "min": 1, "max": 99, "step": 0.1}),
                 "scheduler": (["PNDM from pretrained"] + Scheduler_Names, {"default": "Euler a"}),
-                "width": ("INT", {"default": 256,"min": 512, "max": 10240, "step": 1}),
-                "height": ("INT", {"default": 256,"min": 512, "max": 10240, "step": 1}),
+                "width": ("INT", {"default": 512,"min": 256, "max": 10240, "step": 1}),
+                "height": ("INT", {"default": 512,"min": 256, "max": 10240, "step": 1}),
                 "batch_size": ("INT", {"default": 1, "min": 1, "max": 960}),
                 "seed": ("INT", {"default": 88888888, "min": 0, "max": 0xFFFFFFFFFFFFFFFF}),
                 "device": (["auto", "cuda", "cpu", "mps", "xpu", "meta"],{"default": "auto"}),
@@ -207,6 +201,7 @@ class UL_Image_Generation_Diffusers_Sampler:
         from diffusers import PNDMScheduler
         pipe_scheduler = PNDMScheduler.from_pretrained(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'JoyType-scheduler'))
         if scheduler != 'PNDM from pretrained':
+            pipe_scheduler.clip_sample = False
             pipe_scheduler = SD15_Scheduler_List(pipe_scheduler)[scheduler]
             
         if 'cpu' in diffusers_model['vae'].device.type:

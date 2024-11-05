@@ -2,7 +2,7 @@
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
 
-## Improved custom_node from my older custom_node (repo deleted).
+## Improved custom_node from my older custom_node (repo deleted for too much bugs).
 ## AnyText Checkpoint: select Auto_Download from huggingface or manual download from huggingface or modelscope.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors
@@ -53,11 +53,11 @@
 
 # 3、JoyType: Unofficial custom_node for [JoyType: A Robust Design for Multilingual Visual Text Creation](https://github.com/jdh-algo/JoyType)
 
-## It's a typical canny controlnet application by diffusers library.
+## It's a typical canny controlnet implementation by diffusers library.
 
 ## Comfy sample workflow recommended, sd1.5、sd2.1、sdxl canny works.
 
-## For JoyType controlnet, download from https://huggingface.co/jdh-algo/JoyType-v1-1M and place in `ComfyUI\models\controlnet`, it's a diffusers format canny controlnet, works in comfy sampler.
+## For JoyType controlnet, download from https://huggingface.co/jdh-algo/JoyType-v1-1M into `ComfyUI\models\controlnet`. It's a diffusers format canny controlnet, compitable with comfy sampler.
 
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-JoyType-wf.png)

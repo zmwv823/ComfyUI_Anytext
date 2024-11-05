@@ -203,7 +203,7 @@ class UL_DiffusersControlNetLoader:
     TITLE = "Diffusers Load ControlNet"
     DESCRIPTION = "Load ControlNet model with diffusers library, load control_net_pretrained if control_net_name is None, else load control_net_name.\n使用diffusers库加载控制网模型，如果control_net_name为None(无)则加载control_net_pretrained，否则加载control_net_name。"
 
-    def UL_Common_Diffusers_ControlNet_Loader(self, control_net_name, control_net_pretrained, dtype, debug=True):
+    def UL_Common_Diffusers_ControlNet_Loader(self, control_net_name, control_net_pretrained, dtype, debug=False):
         dtype = get_dtype_by_name(dtype)
         
         if  control_net_name == 'None' and control_net_pretrained == 'None':

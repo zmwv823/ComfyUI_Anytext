@@ -1,4 +1,4 @@
-# Look at the node tooltip for instrction.
+# Look at the node tooltip for instruction.
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
 
@@ -34,7 +34,7 @@
 - https://modelscope.cn/models/iic/nlp_csanmt_translation_zh2en
 
 ### Workflow in workflow dir:
-![](./workflow/Anytext-wf.png)
+![](./workflow/Img_Gen-AnyText-wf.png)
 
 # 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
 
@@ -50,3 +50,14 @@
 
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-Glyph_ByT5-wf.png)
+
+# 3、JoyType: Unofficial custom_node for [JoyType: A Robust Design for Multilingual Visual Text Creation](https://github.com/jdh-algo/JoyType)
+
+## It's a typical canny controlnet application by diffusers library.
+
+## Comfy sample workflow recommended, sd1.5、sd2.1、sdxl canny works.
+
+## For JoyType controlnet, download from https://huggingface.co/jdh-algo/JoyType-v1-1M and place in `ComfyUI\models\controlnet`, it's a diffusers format canny controlnet, works in comfy sampler.
+
+### Workflow in workflow dir:
+![](./workflow/Img_Gen-JoyType-wf.png)

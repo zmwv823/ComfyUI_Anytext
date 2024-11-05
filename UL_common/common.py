@@ -354,6 +354,50 @@ def cv2img_canny(img, low_threshold=64, high_threshold=100):
     return Image.fromarray(img)
 
 Scheduler_Names = ["Euler", "Euler Karras", "Euler a", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE", "DPM++ 2M SDE Karras", "DDIM", "UniPC", "UniPC Karras", "DPM++ SDE", "DPM++ SDE Karras", "DPM2", "DPM2 Karras", "DPM2 a", "DPM2 a Karras", "Heun", "Heun Karras", "LMS", "LMS Karras", "TCD", "LCM", "IPNDM", "DEIS", "DEIS Karras", "DDPM"]
+        
+def SD15_Scheduler_List(scheduler=None):
+    """_summary_
+
+    Args:
+        scheduler(model_default_scheduler): 
+            from diffusers import DDIMScheduler
+            scheduler = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
+
+    Returns:
+        _type_: SD15 Scheduler List
+    """
+    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, IPNDMScheduler, DEISMultistepScheduler, DDPMScheduler
+    # scheduler = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
+    schedulers = {
+            "Euler": EulerDiscreteScheduler.from_config(scheduler.config),
+            # "Euler": EulerDiscreteScheduler.from_config(pipeline.scheduler.config), #从pipeline获取,适用于diffusers管线。
+            "Euler Karras": EulerDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "Euler a": EulerAncestralDiscreteScheduler.from_config(scheduler.config),
+            "DPM++ 2M": DPMSolverMultistepScheduler.from_config(scheduler.config),
+            "DPM++ 2M Karras": DPMSolverMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "DPM++ 2M SDE": DPMSolverMultistepScheduler.from_config(scheduler.config, algorithm_type="sde-dpmsolver++"),
+            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
+            "DDIM": DDIMScheduler.from_config(scheduler.config),
+            "UniPC": UniPCMultistepScheduler.from_config(scheduler.config),
+            "UniPC Karras": UniPCMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "DPM++ SDE": DPMSolverSinglestepScheduler.from_config(scheduler.config, lower_order_final=True),
+            "DPM++ SDE Karras": DPMSolverSinglestepScheduler.from_config(scheduler.config, use_karras_sigmas=True, lower_order_final=True),
+            "DPM2": KDPM2DiscreteScheduler.from_config(scheduler.config),
+            "DPM2 Karras": KDPM2DiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "DPM2 a": KDPM2AncestralDiscreteScheduler.from_config(scheduler.config),
+            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "Heun": HeunDiscreteScheduler.from_config(scheduler.config),
+            "Heun Karras": HeunDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "LMS": LMSDiscreteScheduler.from_config(scheduler.config),
+            "LMS Karras": LMSDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "TCD": TCDScheduler.from_config(scheduler.config),
+            "LCM": LCMScheduler.from_config(scheduler.config),
+            "IPNDM": IPNDMScheduler.from_config(scheduler.config),
+            "DEIS": DEISMultistepScheduler.from_config(scheduler.config),
+            "DEIS Karras": DEISMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
+            "DDPM": DDPMScheduler.from_config(scheduler.config),
+        }
+    return schedulers
 
 def SDXL_Scheduler_List():
     from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, IPNDMScheduler, DEISMultistepScheduler, DDPMScheduler
@@ -418,3 +462,17 @@ def seperate_masks(mask, sort_priority, gap=102):
     components.sort(key=lambda c: (c[1][fir]//gap, c[1][sec]//gap))
     sorted_components = [c[0] for c in components]
     return sorted_components
+
+def padding_image(pil_img, max_size=1024):
+    """
+    图片按最长边缩放到指定尺寸
+    Args:
+        pil_img: _description_
+        max_size: 最长边缩放到尺寸
+    Returns:
+        _type_: pil_img
+    """
+    ratio = max_size / max(pil_img.size)
+    new_size = tuple([int(x * ratio) for x in pil_img.size])
+    img = pil_img.resize(new_size, Image.LANCZOS)
+    return img

@@ -27,6 +27,10 @@ else:
   ## Glyph-SDXL
 	from .Image_Generation.Glyph_ByT5.nodes import NODE_CLASS_MAPPINGS as Glyph_SDXL_Nodes
 	NODE_CLASS_MAPPINGS.update(Glyph_SDXL_Nodes)
+ 
+  ## JoyType
+	from .Image_Generation.JoyType.nodes import NODE_CLASS_MAPPINGS as JoyType_Nodes
+	NODE_CLASS_MAPPINGS.update(JoyType_Nodes)
 
 # Image Process 
  ## Image_Process Common
@@ -34,7 +38,7 @@ else:
 	NODE_CLASS_MAPPINGS.update(UL_Image_Process_Common_Nodes)
 
 # UL common## Common Loader
-	from .UL_common.diffusers_checkpoint_loader import NODE_CLASS_MAPPINGS as UL_common_loader_Nodes
+	from .UL_common.diffusers_nodes import NODE_CLASS_MAPPINGS as UL_common_loader_Nodes
 	NODE_CLASS_MAPPINGS.update(UL_common_loader_Nodes)
  
 NODE_DISPLAY_NAME_MAPPINGS = {k:v.TITLE for k,v in NODE_CLASS_MAPPINGS.items()}

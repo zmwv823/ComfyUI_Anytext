@@ -1,0 +1,8 @@
+ComfyUI-Node:
+
+
+Original Repo:
+https://github.com/jdh-algo/JoyType
+
+Huggingface:
+https://huggingface.co/jdh-algo/JoyType-v1-1M

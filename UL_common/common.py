@@ -353,9 +353,9 @@ def cv2img_canny(img, low_threshold=64, high_threshold=100):
     img = np.concatenate([img, img, img], axis=2)
     return Image.fromarray(img)
 
-Scheduler_Names = ["Euler", "Euler Karras", "Euler a", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE", "DPM++ 2M SDE Karras", "DDIM", "UniPC", "UniPC Karras", "DPM++ SDE", "DPM++ SDE Karras", "DPM2", "DPM2 Karras", "DPM2 a", "DPM2 a Karras", "Heun", "Heun Karras", "LMS", "LMS Karras", "TCD", "LCM", "IPNDM", "DEIS", "DEIS Karras", "DDPM"]
+Scheduler_Names = ["Euler", "Euler Karras", "Euler a", "DPM++ 2M", "DPM++ 2M Karras", "DPM++ 2M SDE", "DPM++ 2M SDE Karras", "DDIM", "UniPC", "UniPC Karras", "DPM++ SDE", "DPM++ SDE Karras", "DPM2", "DPM2 Karras", "DPM2 a", "DPM2 a Karras", "Heun", "Heun Karras", "LMS", "LMS Karras", "TCD", "LCM", "PNDM", "DEIS", "DEIS Karras", "DDPM", 'SASolver']#, "IPNDM"]
         
-def SD15_Scheduler_List(scheduler=None):
+def SD15_Scheduler_List():
     """_summary_
 
     Args:
@@ -366,68 +366,72 @@ def SD15_Scheduler_List(scheduler=None):
     Returns:
         _type_: SD15 Scheduler List
     """
-    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, IPNDMScheduler, DEISMultistepScheduler, DDPMScheduler
-    # scheduler = DDIMScheduler.from_pretrained(model_path, subfolder="scheduler")
+    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, PNDMScheduler, DEISMultistepScheduler, DDPMScheduler, SASolverScheduler#, IPNDMScheduler
+    from .sd15_scheduler_configs import ddim_config, pndm_config, lcm_config, deis_config, tcd_config
     schedulers = {
-            "Euler": EulerDiscreteScheduler.from_config(scheduler.config),
-            # "Euler": EulerDiscreteScheduler.from_config(pipeline.scheduler.config), #从pipeline获取,适用于diffusers管线。
-            "Euler Karras": EulerDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "Euler a": EulerAncestralDiscreteScheduler.from_config(scheduler.config),
-            "DPM++ 2M": DPMSolverMultistepScheduler.from_config(scheduler.config),
-            "DPM++ 2M Karras": DPMSolverMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "DPM++ 2M SDE": DPMSolverMultistepScheduler.from_config(scheduler.config, algorithm_type="sde-dpmsolver++"),
-            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
-            "DDIM": DDIMScheduler.from_config(scheduler.config),
-            "UniPC": UniPCMultistepScheduler.from_config(scheduler.config),
-            "UniPC Karras": UniPCMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "DPM++ SDE": DPMSolverSinglestepScheduler.from_config(scheduler.config, lower_order_final=True),
-            "DPM++ SDE Karras": DPMSolverSinglestepScheduler.from_config(scheduler.config, use_karras_sigmas=True, lower_order_final=True),
-            "DPM2": KDPM2DiscreteScheduler.from_config(scheduler.config),
-            "DPM2 Karras": KDPM2DiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "DPM2 a": KDPM2AncestralDiscreteScheduler.from_config(scheduler.config),
-            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "Heun": HeunDiscreteScheduler.from_config(scheduler.config),
-            "Heun Karras": HeunDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "LMS": LMSDiscreteScheduler.from_config(scheduler.config),
-            "LMS Karras": LMSDiscreteScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "TCD": TCDScheduler.from_config(scheduler.config),
-            "LCM": LCMScheduler.from_config(scheduler.config),
-            "IPNDM": IPNDMScheduler.from_config(scheduler.config),
-            "DEIS": DEISMultistepScheduler.from_config(scheduler.config),
-            "DEIS Karras": DEISMultistepScheduler.from_config(scheduler.config, use_karras_sigmas=True),
-            "DDPM": DDPMScheduler.from_config(scheduler.config),
+            "Euler": EulerDiscreteScheduler.from_config(pndm_config),
+            "Euler Karras": EulerDiscreteScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "Euler a": EulerAncestralDiscreteScheduler.from_config(pndm_config),
+            "DPM++ 2M": DPMSolverMultistepScheduler.from_config(pndm_config),
+            "DPM++ 2M Karras": DPMSolverMultistepScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "DPM++ 2M SDE": DPMSolverMultistepScheduler.from_config(pndm_config, algorithm_type="sde-dpmsolver++"),
+            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler.from_config(pndm_config, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
+            "DDIM": DDIMScheduler.from_config(ddim_config),
+            "UniPC": UniPCMultistepScheduler.from_config(pndm_config),
+            "UniPC Karras": UniPCMultistepScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "DPM++ SDE": DPMSolverSinglestepScheduler.from_config(pndm_config, lower_order_final=True),
+            "DPM++ SDE Karras": DPMSolverSinglestepScheduler.from_config(pndm_config, use_karras_sigmas=True, lower_order_final=True),
+            "DPM2": KDPM2DiscreteScheduler.from_config(pndm_config),
+            "DPM2 Karras": KDPM2DiscreteScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "DPM2 a": KDPM2AncestralDiscreteScheduler.from_config(pndm_config),
+            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "Heun": HeunDiscreteScheduler.from_config(pndm_config),
+            "Heun Karras": HeunDiscreteScheduler.from_config(pndm_config, use_karras_sigmas=True),
+            "LMS": LMSDiscreteScheduler.from_config(lcm_config),
+            "LMS Karras": LMSDiscreteScheduler.from_config(lcm_config, use_karras_sigmas=True),
+            "TCD": TCDScheduler.from_config(tcd_config),
+            "LCM": LCMScheduler.from_config(lcm_config),
+            "PNDM": PNDMScheduler.from_config(pndm_config),
+            "DEIS": DEISMultistepScheduler.from_config(deis_config),
+            "DEIS Karras": DEISMultistepScheduler.from_config(deis_config, use_karras_sigmas=True),
+            "DDPM": DDPMScheduler.from_config(pndm_config),
+            'SASolver': SASolverScheduler.from_config(pndm_config)
+            # "IPNDM": IPNDMScheduler.from_config(lcm_config),
         }
     return schedulers
 
 def SDXL_Scheduler_List():
-    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, IPNDMScheduler, DEISMultistepScheduler, DDPMScheduler
+    from diffusers import DPMSolverMultistepScheduler, DPMSolverSinglestepScheduler, KDPM2DiscreteScheduler, KDPM2AncestralDiscreteScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, HeunDiscreteScheduler, LMSDiscreteScheduler, UniPCMultistepScheduler, DDIMScheduler, TCDScheduler, LCMScheduler, PNDMScheduler, DEISMultistepScheduler, DDPMScheduler, SASolverScheduler#, IPNDMScheduler
+    from .sdxl_scheduler_configs import ddim_config_xl, euler_config_xl
     schedulers = {
-            "Euler": EulerDiscreteScheduler(),
-            "Euler Karras": EulerDiscreteScheduler(use_karras_sigmas=True),
-            "Euler a": EulerAncestralDiscreteScheduler(),
-            "DPM++ 2M": DPMSolverMultistepScheduler(),
-            "DPM++ 2M Karras": DPMSolverMultistepScheduler(use_karras_sigmas=True),
-            "DPM++ 2M SDE": DPMSolverMultistepScheduler(algorithm_type="sde-dpmsolver++"),
-            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler(use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
-            "DDIM": DDIMScheduler(),
-            "UniPC": UniPCMultistepScheduler(),
-            "UniPC Karras": UniPCMultistepScheduler(use_karras_sigmas=True),
-            "DPM++ SDE": DPMSolverSinglestepScheduler(),
-            "DPM++ SDE Karras": DPMSolverSinglestepScheduler(use_karras_sigmas=True),
-            "DPM2": KDPM2DiscreteScheduler(),
-            "DPM2 Karras": KDPM2DiscreteScheduler(use_karras_sigmas=True),
-            "DPM2 a": KDPM2AncestralDiscreteScheduler(),
-            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler(use_karras_sigmas=True),
-            "Heun": HeunDiscreteScheduler(),
-            "Heun Karras": HeunDiscreteScheduler(use_karras_sigmas=True),
-            "LMS": LMSDiscreteScheduler(),
-            "LMS Karras": LMSDiscreteScheduler(use_karras_sigmas=True),
-            "TCD": TCDScheduler(),
-            "LCM": LCMScheduler(),
-            "IPNDM": IPNDMScheduler(),
-            "DEIS": DEISMultistepScheduler(),
-            "DEIS Karras": DEISMultistepScheduler(use_karras_sigmas=True),
-            "DDPM": DDPMScheduler(),
+            "Euler": EulerDiscreteScheduler.from_config(euler_config_xl),
+            "Euler Karras": EulerDiscreteScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "Euler a": EulerAncestralDiscreteScheduler.from_config(euler_config_xl, steps_offset=1),
+            "DPM++ 2M": DPMSolverMultistepScheduler.from_config(euler_config_xl),
+            "DPM++ 2M Karras": DPMSolverMultistepScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "DPM++ 2M SDE": DPMSolverMultistepScheduler.from_config(euler_config_xl, algorithm_type="sde-dpmsolver++"),
+            "DPM++ 2M SDE Karras": DPMSolverMultistepScheduler.from_config(euler_config_xl, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"),
+            "DDIM": DDIMScheduler.from_config(ddim_config_xl),
+            "UniPC": UniPCMultistepScheduler.from_config(euler_config_xl, ),
+            "UniPC Karras": UniPCMultistepScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "DPM++ SDE": DPMSolverSinglestepScheduler.from_config(euler_config_xl, ),
+            "DPM++ SDE Karras": DPMSolverSinglestepScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "DPM2": KDPM2DiscreteScheduler.from_config(euler_config_xl, ),
+            "DPM2 Karras": KDPM2DiscreteScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "DPM2 a": KDPM2AncestralDiscreteScheduler.from_config(euler_config_xl, ),
+            "DPM2 a Karras": KDPM2AncestralDiscreteScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "Heun": HeunDiscreteScheduler.from_config(euler_config_xl, ),
+            "Heun Karras": HeunDiscreteScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "LMS": LMSDiscreteScheduler.from_config(euler_config_xl, ),
+            "LMS Karras": LMSDiscreteScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "TCD": TCDScheduler.from_config(ddim_config_xl),
+            "LCM": LCMScheduler.from_config(ddim_config_xl),
+            "PNDM": PNDMScheduler.from_config(euler_config_xl, ),
+            "DEIS": DEISMultistepScheduler.from_config(euler_config_xl, ),
+            "DEIS Karras": DEISMultistepScheduler.from_config(euler_config_xl, use_karras_sigmas=True),
+            "DDPM": DDPMScheduler.from_config(euler_config_xl, ),
+            'SASolver': SASolverScheduler.from_config(euler_config_xl, ),
+            # "IPNDM": IPNDMScheduler(),
         }
     return schedulers
 

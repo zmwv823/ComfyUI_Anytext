@@ -252,8 +252,9 @@ class AnyText_Model_Loader:
     @classmethod
     def INPUT_TYPES(self):
         checkpoints_list = folder_paths.get_filename_list("checkpoints")
-        
-        text_encoders = os.listdir(os.path.join(folder_paths.models_dir, "clip")) + os.listdir(os.path.join(folder_paths.models_dir, "text_encoders"))
+        clip_dir = os.path.join(folder_paths.models_dir, "clip")
+        clip_list = [] if not os.path.exists(clip_dir) else os.listdir(clip_dir)
+        text_encoders = clip_list + os.listdir(os.path.join(folder_paths.models_dir, "text_encoders"))
         text_encoder_list = []
         for folder in text_encoders:
             if os.path.isdir(os.path.join(folder_paths.models_dir, "clip", folder)) or os.path.isdir(os.path.join(folder_paths.models_dir, "text_encoders", folder)):

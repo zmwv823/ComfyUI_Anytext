@@ -1,0 +1,128 @@
+ddim_config = {
+    "_class_name": "DDIMScheduler",
+    "_diffusers_version": "0.6.0.dev0",
+    "beta_end": 0.012,
+    "beta_schedule": "scaled_linear",
+    "beta_start": 0.00085,
+    "clip_sample": False,
+    "num_train_timesteps": 1000,
+    "set_alpha_to_one": False,
+    "steps_offset": 1,
+    # "trained_betas": null,
+    "skip_prk_steps": True
+}
+
+pndm_config = {
+  "_class_name": "PNDMScheduler",
+  "_diffusers_version": "0.15.0.dev0",
+  "beta_end": 0.012,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "clip_sample": False,
+  "clip_sample_range": 1.0,
+  "dynamic_thresholding_ratio": 0.995,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": False,
+  "skip_prk_steps": True,
+  "steps_offset": 1,
+  "thresholding": False,
+  "timestep_spacing": "leading",
+#   "trained_betas": null
+}
+
+lcm_config = {
+  "_class_name": "LCMScheduler",
+  "_diffusers_version": "0.22.0.dev0",
+  "beta_end": 0.012,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "clip_sample": False,
+  "clip_sample_range": 1.0,
+  "dynamic_thresholding_ratio": 0.995,
+  "num_train_timesteps": 1000,
+  "original_inference_steps": 50,
+  "prediction_type": "epsilon",
+  "rescale_betas_zero_snr": False,
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": True,
+  "steps_offset": 1,
+  "thresholding": False,
+  "timestep_spacing": "leading"
+#   "trained_betas": null
+}
+
+deis_config = {
+  "_class_name": "DEISMultistepScheduler",
+  "_diffusers_version": "0.21.0.dev0",
+  "algorithm_type": "deis",
+  "beta_end": 0.012,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "clip_sample": False,
+  "dynamic_thresholding_ratio": 0.995,
+  "lower_order_final": True,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": False,
+  "skip_prk_steps": True,
+  "solver_order": 2,
+  "solver_type": "logrho",
+  "steps_offset": 1,
+  "thresholding": False,
+  "timestep_spacing": "leading",
+#   "trained_betas": null,
+  # "use_karras_sigmas": False
+}
+
+tcd_config = {
+  "_class_name": "DEISMultistepScheduler",
+  "_diffusers_version": "0.21.0.dev0",
+  "algorithm_type": "deis",
+  "beta_end": 0.012,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "clip_sample": False,
+  "dynamic_thresholding_ratio": 0.995,
+  "lower_order_final": True,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": False,
+  # "skip_prk_steps": True,
+  "solver_order": 2,
+  "solver_type": "logrho",
+  "steps_offset": 1,
+  "thresholding": False,
+  "timestep_spacing": "leading",
+#   "trained_betas": null,
+  # "use_karras_sigmas": False
+}
+
+dpmpp_config = {
+  "_class_name": "DPMSolverMultistepScheduler",
+  "_diffusers_version": "0.20.0.dev0",
+  "algorithm_type": "dpmsolver++",
+  "beta_end": 0.012,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "clip_sample": False,
+  "dynamic_thresholding_ratio": 0.995,
+  "lambda_min_clipped": '-Infinity',
+  "lower_order_final": True,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": False,
+  "skip_prk_steps": True,
+  "solver_order": 2,
+  "solver_type": "midpoint",
+  "steps_offset": 1,
+  "thresholding": False,
+  "timestep_spacing": "leading",
+  # "trained_betas": null,
+  # "use_karras_sigmas": True,
+  # "variance_type": null
+}

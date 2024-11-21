@@ -6,7 +6,6 @@ import cv2
 import folder_paths
 import torch
 from comfy.model_management import vae_offload_device, unet_offload_device, text_encoder_offload_device
-Scheduler_Names.pop(22) # or del Scheduler_Names[22] or Scheduler_Names.remove("IPNDM") 删除不可用调度器，第23个调度器："IPNDM"。
 
 class UL_Image_Generation_JoyType_Render_List:
     @classmethod
@@ -198,12 +197,6 @@ class UL_Image_Generation_Diffusers_Sampler:
         device = get_device_by_name(device)
         dtype = diffusers_model['unet'].dtype
             
-        from diffusers import PNDMScheduler
-        pipe_scheduler = PNDMScheduler.from_pretrained(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'JoyType-scheduler'))
-        if scheduler != 'PNDM from pretrained':
-            pipe_scheduler.clip_sample = False
-            pipe_scheduler = SD15_Scheduler_List(pipe_scheduler)[scheduler]
-            
         if 'cpu' in diffusers_model['vae'].device.type:
             diffusers_model['vae'].to(device)
         if 'cpu' in diffusers_model['unet'].device.type:
@@ -225,14 +218,11 @@ class UL_Image_Generation_Diffusers_Sampler:
             tokenizer=diffusers_model['clip']['tokenizer'], 
             unet=diffusers_model['unet'],
             controlnet=controlnet_model,
-            scheduler=pipe_scheduler,
+            scheduler=SD15_Scheduler_List()[scheduler],
             feature_extractor=CLIPImageProcessor(),
             )
         
         pipe.enable_xformers_memory_efficient_attention()
-        # JoyType_pipe.enable_model_cpu_offload()
-        # if sequential_offload:
-        #     self.JoyType_pipe.enable_sequential_cpu_offload()
         # from xformers.ops import MemoryEfficientAttentionFlashAttentionOp
         # JoyType_pipe.enable_xformers_memory_efficient_attention(attention_op=MemoryEfficientAttentionFlashAttentionOp)
         

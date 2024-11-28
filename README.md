@@ -1,7 +1,7 @@
 # Look at the node tooltip for instruction.
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
-
+# Font files in `ComfyUI\models\fonts`.
 ## Improved custom_node from my older custom_node (repo deleted for too much bugs).
 ## AnyText Checkpoint: select Auto_Download from huggingface or manual download from huggingface or modelscope.
 ### Huggingface:

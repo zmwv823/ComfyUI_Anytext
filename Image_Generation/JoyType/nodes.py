@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
-from ...UL_common.common import get_files_with_extension, tensor2numpy_cv2, SD15_Scheduler_List, Scheduler_Names, get_device_by_name, pil2tensor, clean_up, tensor2pil, cv2img_canny, seperate_masks, Pillow_Color_Names, padding_image
+from ...UL_common.common import tensor2numpy_cv2, SD15_Scheduler_List, Scheduler_Names, get_device_by_name, pil2tensor, clean_up, tensor2pil, cv2img_canny, seperate_masks, Pillow_Color_Names, padding_image
 import cv2
 import folder_paths
 import torch
@@ -10,7 +10,7 @@ from comfy.model_management import vae_offload_device, unet_offload_device, text
 class UL_Image_Generation_JoyType_Render_List:
     @classmethod
     def INPUT_TYPES(self):
-        self.font_files = get_files_with_extension('fonts', ['.ttf', '.otf'])
+        self.font_files = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
         return {
             "required": {
             "mask": ("MASK",),
@@ -18,17 +18,17 @@ class UL_Image_Generation_JoyType_Render_List:
             "sort_radio": ("BOOLEAN", {"default": True, "label_on": "↔水平排序", "label_off": "↕垂直排序", "tooltip": "控制生成文字的位置顺序，根据遮罩的顺序确认文字对应位置的顺序。水平则从左往右，最靠近画布左边的遮罩位置先开始，垂直则从上往下，最靠近画布上边的遮罩位置开始。"}), 
             # "width": ("INT", {"forceInput": True}),
             # "height": ("INT", {"forceInput": True}),
-            "font1": (['None'] + [file for file in self.font_files], {"default": "清松手写体.ttf"}),
+            "font1": (['None'] + self.font_files, {"default": "清松手写体.ttf"}),
             "text1": ("STRING", {"default": "床前明月光，疑似地上霜。", "multiline": True, "dynamicPrompts": True}),
-            "font2": (['None'] + [file for file in self.font_files], {"default": "小篆拼音体.ttf"}),
+            "font2": (['None'] + self.font_files, {"default": "小篆拼音体.ttf"}),
             "text2": ("STRING", {"default": "除夜を祝う.", "multiline": True, "dynamicPrompts": True}),
-            "font3": (['None'] + [file for file in self.font_files], {"default": "迷你简综艺.ttf"}),
+            "font3": (['None'] + self.font_files, {"default": "迷你简综艺.ttf"}),
             "text3": ("STRING", {"default": "It's funny!", "multiline": True, "dynamicPrompts": True}),
-            "font4": (['None'] + [file for file in self.font_files], {"default": "沙孟海书法字体.ttf"}),
+            "font4": (['None'] + self.font_files, {"default": "沙孟海书法字体.ttf"}),
             "text4": ("STRING", {"default": "전문 메이크업 아티스트 아름다운 한복 무료 촬영.", "multiline": True, "dynamicPrompts": True}),
-            "font5": (['None'] + [file for file in self.font_files], {"default": "文道现代篆书.ttf"}),
+            "font5": (['None'] + self.font_files, {"default": "文道现代篆书.ttf"}),
             "text5": ("STRING", {"default": "Ответьте, пожалуйста, на номер +123-456-7890.", "multiline": True, "dynamicPrompts": True}),
-            "font6": (['None'] + [file for file in self.font_files], {"default": "AnyText-Arial-Unicode.ttf"}),
+            "font6": (['None'] + self.font_files, {"default": "AnyText-Arial-Unicode.ttf"}),
             "text6": ("STRING", {"default": "A TERRA É O QUE TODOS NÓS TEMOS EM COMUM.", "multiline": True, "dynamicPrompts": True}),
         }, 
         }

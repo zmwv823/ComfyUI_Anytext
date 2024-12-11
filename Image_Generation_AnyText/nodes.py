@@ -7,7 +7,7 @@ import torch
 from PIL import ImageFont, Image
 from comfy.utils import load_torch_file
 from .AnyText_scripts.AnyText_pipeline_util import resize_image
-from ..UL_common.common import pil2tensor, get_device_by_name, get_files_with_extension, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name
+from ..UL_common.common import pil2tensor, get_device_by_name, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name
 from .. import comfy_temp_dir
 from comfy.model_management import unet_offload_device
 
@@ -328,10 +328,10 @@ class AnyText_Model_Loader:
 class AnyText_Params:
     @classmethod
     def INPUT_TYPES(self):
-        self.font_files = get_files_with_extension('fonts', ['.ttf', '.otf'])
+        self.font_files = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
         return {
             "required": {
-                "font_name": (['Auto_DownLoad'] + [file for file in self.font_files], {"default": "AnyText-Arial-Unicode.ttf"}),
+                "font_name": (['Auto_DownLoad'] + self.font_files, {"default": "AnyText-Arial-Unicode.ttf"}),
                 "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI\custom_nodes\ComfyUI_Anytext\requirements-with-nlp-translator.txt`，其余不建议。"}), 
                 "translator_device": (["auto", "cuda", "cpu", "mps", "xpu"],{"default": "auto"}), 
                 "keep_translator_loaded": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
@@ -385,15 +385,13 @@ class AnyText_Params:
 class UL_Image_Generation_AnyText_Font_Img:
     @classmethod
     def INPUT_TYPES(self):
-        self.font_files = get_files_with_extension('fonts', ['.ttf', '.otf'])
+        self.font_files = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
         return {
             "required": {
-                "font": (['Auto_DownLoad'] + [file for file in self.font_files], {"default": "索尼兰亭.ttf"}),
+                "font": (['Auto_DownLoad'] + self.font_files, {"default": "索尼兰亭.ttf"}),
                 "pos_mask": ("MASK", ),
-                # "sort_radio": (["↕", "↔"], {"default": "↔"}), 
                 "sort_radio": ("BOOLEAN", {"default": True, "label_on": "↔水平排序", "label_off": "↕垂直排序"}), 
                 "font_color_name": (['transparent'] + Pillow_Color_Names, {"default": "white"}),
-                # "font_color_name": (Pillow_Color_Names, {"default": "white"}),
                 "font_color_code": ("STRING",{"default": "00ffdd"}), 
                 "font_color_codeR": ("INT",{"default": -1, "min": -1, "max": 255, "step": 1}), 
                 "font_color_codeG": ("INT",{"default": 0, "min": 0, "max": 255, "step": 1}), 

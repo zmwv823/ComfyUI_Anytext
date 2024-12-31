@@ -480,3 +480,28 @@ def padding_image(pil_img, max_size=1024):
     new_size = tuple([int(x * ratio) for x in pil_img.size])
     img = pil_img.resize(new_size, Image.LANCZOS)
     return img
+
+def comfy_clean_vram(**kwargs):
+    loaded_models = mm.loaded_models()
+    if kwargs.get("model") in loaded_models:
+        print(" - Model found in memory, unloading...")
+        loaded_models.remove(kwargs.get("model"))
+    else:
+        # Just delete it, I need the VRAM!
+        model = kwargs.get("model")
+        if type(model) == dict:
+            keys = [(key, type(value).__name__) for key, value in model.items()]
+            for key, model_type in keys:
+                if key == 'model':
+                    print(f"Unloading model of type {model_type}")
+                    del model[key]
+                    # Emptying the cache after this should free the memory.
+    mm.free_memory(1e30, mm.get_torch_device(), loaded_models)
+    mm.soft_empty_cache(True)
+    try:
+        print(" - Clearing Cache...")
+        clean_up()
+    except:
+        print("   - Unable to clear cache")
+    #time.sleep(2) # why?
+    return (list(kwargs.values()))

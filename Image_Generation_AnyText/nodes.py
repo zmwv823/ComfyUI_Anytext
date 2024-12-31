@@ -7,10 +7,10 @@ import torch
 from PIL import ImageFont, Image
 from comfy.utils import load_torch_file, ProgressBar
 from .AnyText_scripts.AnyText_pipeline_util import resize_image
-from ..UL_common.common import pil2tensor, get_device_by_name, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name
+from ..UL_common.common import pil2tensor, get_device_by_name, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
 from .. import comfy_temp_dir
 from ..UL_common.pretrained_config_dirs import SD15_Base_pretrained_dir
-from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, soft_empty_cache, vae_offload_device
+from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, soft_empty_cache, vae_offload_device, load_model_gpu
 import folder_paths
 import einops
 import copy
@@ -678,7 +678,109 @@ class UL_AnyTextFormatter:
             apply_translate=inputs['apply_translate'],
         )
         return (prompt, texts)
+
+class UL_AnyTextLoaderTest:
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
+                "control_net_name": (["None"] + folder_paths.get_filename_list("controlnet"), ),
+                "miaobi_clip": (["None"] + folder_paths.get_filename_list("text_encoders"), ),
+                "weight_dtype": (["auto", "fp16", "fp32", "bf16", "fp8_e4m3fn", "fp8_e4m3fnuz", "fp8_e5m2", "fp8_e5m2fnuz"],{"default":"auto", "tooltip": "Only fp16 and fp32 works.\n仅支持fp16和fp32。"}),
+                },
+            "optional": {
+                "c_model" :("MODEL",),
+                "clip": ("CLIP",),
+                "vae": ("VAE",),
+            }
+        }
+
+    RETURN_TYPES = ("AnyText_Model", "VAE", "STRING", )
+    RETURN_NAMES = ("model", "vae", "ckpt_name", )
+    FUNCTION = "Loader"
+    CATEGORY = "UL Group/Image Generation"
+    TITLE = "AnyText Loader(Test)"
+    DESCRIPTION = "Only LoRA without trigger word works.\nIf not input c_model, then load ckpt_name model.\nMiaobi_clip is optional, for chinese prompt text_encode without translator.\nOption 1: load full AnyText ckeckpoint in ckpt_name without controlnet.\nOption 2: load custom sd1.5 ckeckpoint with AnyText control_net.\n仅没有触发词的LoRA能生效。\n如果不输入c_model，则从ckpt_name加载模型。\nmiaobi_clip是可选项，用于输入中文提示词但不使用翻译机。\n选项1： 加载完整的AnyText模型，此时勿加载control_net。\n选项2：加载自定义sd1.5模型和AnyText的control_net。"
+    
+    def __init__(self):
+        self.raised = False
+
+    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype, c_model=None, clip=None, vae=None):
+        if c_model != None and control_net_name == "None" and not self.raised:
+            self.raised = True
+            raise ValueError("If input c_model, AnyText Control model is essential, or text mask will not work.\n如果输入c_model，则必须输入AnyText Control model，否则文字遮罩无效。")
+            
+        from .AnyText_scripts.cldm.model import create_model
+    
+        dtype = get_dtype_by_name(weight_dtype)
         
+        ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
+        cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models_yaml', 'anytext_sd15.yaml')
+        
+        model = create_model(cfg_path, use_fp16=(dtype == torch.float16)) #dtype control
+        
+        if c_model == None:
+            state_dict = load_torch_file(ckpt_path, safe_load=True)
+        else:
+            load_model_gpu(c_model)
+            state_dict = c_model.model.state_dict_for_saving(None, vae.get_sd(), None)
+            soft_empty_cache(True)
+        
+        if control_net_name != "None":
+            anytext_controlnet_path = folder_paths.get_full_path_or_raise("controlnet", control_net_name)
+            anytext_state_dict = load_torch_file(anytext_controlnet_path, safe_load=True)
+            for k in list(anytext_state_dict):
+                state_dict[k] = anytext_state_dict[k]
+                anytext_state_dict[k] = None
+            # state_dict.update(anytext_state_dict)
+            del anytext_state_dict
+          
+        if miaobi_clip != "None":
+            from transformers import AutoTokenizer
+            custom_tokenizer =  AutoTokenizer.from_pretrained(MiaoBi_tokenizer_dir, trust_remote_code=True)
+            model.cond_stage_model.tokenizer = custom_tokenizer
+            clip_path = folder_paths.get_full_path_or_raise("text_encoders", miaobi_clip)
+            for k in list(state_dict.keys()):
+                if k.startswith("cond_stage_model"):
+                    state_dict[k] = None
+                    state_dict.pop(k)
+            clip_l_sd = load_torch_file(clip_path, safe_load=True)
+        elif clip != None and miaobi_clip == "None":
+            clip_model = clip.load_model()
+            load_model_gpu(clip_model)
+            clip_l_sd = clip.get_sd()
+            clip_l_sd = c_model.model.model_config.process_clip_state_dict_for_saving(clip_l_sd)
+            soft_empty_cache(True)
+            for k in list(clip_l_sd.keys()):
+                if k.startswith("cond_stage_model"):
+                    clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = clip_l_sd[k]
+                    clip_l_sd[k] = None
+                    clip_l_sd.pop(k)
+        elif c_model == None and miaobi_clip == "None":
+            clip_l_sd = {}
+            for k in list(state_dict.keys()):
+                if k.startswith("cond_stage_model"):
+                    clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = state_dict[k]
+                    state_dict.pop(k)
+        
+        model.load_state_dict(state_dict, strict=False)
+        del state_dict
+        model.cond_stage_model.transformer.load_state_dict(clip_l_sd, strict=False)
+        del clip_l_sd
+        model.cond_stage_model.freeze()
+        if c_model != None:
+            comfy_clean_vram()
+        clean_up()
+        
+        model.eval().to(get_torch_device(), dtype)
+        
+        model = {
+            'model': model,
+        }
+        
+        return (model, VAE(copy.deepcopy(model["model"].first_stage_model.to(vae_offload_device()))) if vae==None else vae, os.path.basename(ckpt_path), )
+
 # Node class and display name mappings
 NODE_CLASS_MAPPINGS = {
     "UL_AnyText_Sampler": UL_AnyTextSampler,
@@ -688,6 +790,7 @@ NODE_CLASS_MAPPINGS = {
     "UL_AnyText_Composer": UL_AnyTextComposer,
     "UL_AnyTextEncoder": UL_AnyTextEncoder,
     "UL_AnyTextFormatter": UL_AnyTextFormatter,
+    "UL_AnyTextLoaderTest": UL_AnyTextLoaderTest,
 }
 
 

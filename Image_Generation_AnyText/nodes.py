@@ -136,29 +136,28 @@ class UL_AnyTextLoader:
         if control_net_name != "None":
             anytext_controlnet_path = folder_paths.get_full_path_or_raise("controlnet", control_net_name)
             anytext_state_dict = load_torch_file(anytext_controlnet_path, safe_load=True)
-            # for k in list(anytext_state_dict):
-            #     state_dict[k] = anytext_state_dict[k]
-                # anytext_state_dict[k] = None
-            state_dict.update(anytext_state_dict)
+            for k in list(anytext_state_dict):
+                state_dict[k] = anytext_state_dict[k]
+                anytext_state_dict[k] = None
+            # state_dict.update(anytext_state_dict)
             del anytext_state_dict
-            clean_up()
           
         if miaobi_clip != "None":
             from transformers import AutoTokenizer
             custom_tokenizer =  AutoTokenizer.from_pretrained(MiaoBi_tokenizer_dir, trust_remote_code=True)
             model.cond_stage_model.tokenizer = custom_tokenizer
             clip_path = folder_paths.get_full_path_or_raise("text_encoders", miaobi_clip)
-            # for k in list(state_dict.keys()):
-            #     if k.startswith("cond_stage_model"):
-            #         state_dict[k] = None
-            #         state_dict.pop(k)
+            for k in list(state_dict.keys()):
+                if k.startswith("cond_stage_model"):
+                    state_dict[k] = None
+                    state_dict.pop(k)
             clip_l_sd = load_torch_file(clip_path, safe_load=True)
         else:  
             clip_l_sd = {}
             for k in list(state_dict.keys()):
                 if k.startswith("cond_stage_model"):
                     clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = state_dict[k]
-                    # state_dict.pop(k)
+                    state_dict.pop(k)
         
         model.load_state_dict(state_dict, strict=False)
         del state_dict

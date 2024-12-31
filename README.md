@@ -13,7 +13,7 @@
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-AnyText-full-wf.png)
 
-## Option 2: any sd1.5 checkpoint with anytext_controlnet.
+## Option 2: any sd1.5 checkpoint with AnyText control model.
 ### Huggingface:
 - https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
 - https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)

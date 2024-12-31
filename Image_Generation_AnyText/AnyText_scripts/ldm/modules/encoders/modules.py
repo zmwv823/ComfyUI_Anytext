@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.checkpoint import checkpoint
 
-from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel, AutoProcessor, CLIPVisionModelWithProjection
+from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel, AutoProcessor, CLIPVisionModelWithProjection, CLIPTextConfig
 
 import open_clip
 from ...util import count_params
@@ -234,20 +234,28 @@ class FrozenCLIPT5Encoder(AbstractEncoder):
         t5_z = self.t5_encoder.encode(text)
         return [clip_z, t5_z]
 
-
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+clip_l_tokenizer_dir = os.path.join(current_dir, "clip-l_tokenizer")
+clip_l_config_file = os.path.join(current_dir, "clip-l.json")
 class FrozenCLIPEmbedderT3(AbstractEncoder):
     """Uses the CLIP transformer encoder for text (from Hugging Face)"""
     def __init__(self, version="openai/clip-vit-large-patch14", device="cuda", max_length=77, freeze=True, use_vision=False):
         super().__init__()
-        self.tokenizer = CLIPTokenizer.from_pretrained(version)
-        self.transformer = CLIPTextModel.from_pretrained(version)
+        # self.tokenizer = CLIPTokenizer.from_pretrained(version)
+        # self.transformer = CLIPTextModel.from_pretrained(version)
+        
+        self.tokenizer = CLIPTokenizer.from_pretrained(clip_l_tokenizer_dir)
+        clip_l_config = CLIPTextConfig.from_json_file(clip_l_config_file)
+        self.transformer = CLIPTextModel(clip_l_config)
+        
         if use_vision:
             self.vit = CLIPVisionModelWithProjection.from_pretrained(version)
             self.processor = AutoProcessor.from_pretrained(version)
         self.device = device
         self.max_length = max_length
-        if freeze:
-            self.freeze()
+        # if freeze:
+        #     self.freeze()
 
         def embedding_forward(
             self,

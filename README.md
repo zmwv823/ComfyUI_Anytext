@@ -3,7 +3,8 @@
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
 # Font files in `ComfyUI\models\fonts`.
 ## Improved custom_node from my older custom_node (repo deleted for too much bugs).
-## AnyText Checkpoint: select Auto_Download from huggingface or manual download from huggingface or modelscope.
+
+### Option 1: full AnyText checkpoint.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors
 - fp16: https://hf-mirror.com/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors (China mainland users)
@@ -11,13 +12,21 @@
 - fp32: https://hf-mirror.com/Sanster/AnyText/blob/main/pytorch_model.safetensors (China mainland users)
 ### Modelscope:
 - https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/resolve/master/anytext_v1.1.ckpt
+### Workflow in workflow dir:
+![](./workflow/Img_Gen-AnyText-full-wf.png)
 
-## Clip model: select Auto_Download from huggingface or manual download or git clone from huggingface or modelscope into `ComfyUI\models\text_encoders`.
+### Option 2: any sd1.5 checkpoint with anytext_controlnet.
 ### Huggingface:
-- https://huggingface.co/openai/clip-vit-large-patch14
-- https://hf-mirror.com/openai/clip-vit-large-patch14 (China mainland users)
-### Modelscope:
-- https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/files
+- AnyText Control: https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
+- AnyText Control: https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
+### Workflow in workflow dir:
+![](./workflow/Img_Gen-AnyText-wf.png)
+### If want chinese prompt without translator, use MiaoBi clip.
+### Huggingface:
+- AnyText Control: https://huggingface.co/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors
+- AnyText Control: https://hf-mirror.com/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors (China mainland users)
+### Workflow in workflow dir:
+![](./workflow/Img_Gen-AnyText-MiaoBi-wf.png)
 
 ## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts.
 ### Huggingface:
@@ -32,9 +41,6 @@
 - https://hf-mirror.com/utrobinmv/t5_translate_en_ru_zh_small_1024 (China mainland users)
 ### nlp_csanmt_translation_zh2en:  Auto_Download from modelscope or manual download or git clone from modelscope into `ComfyUI\models\prompt_generator\modelscope--damo--nlp_csanmt_translation_zh2en`.
 - https://modelscope.cn/models/iic/nlp_csanmt_translation_zh2en
-
-### Workflow in workflow dir:
-![](./workflow/Img_Gen-AnyText-wf.png)
 
 # 2、Glyph-ByT5: Unofficial custom_node for [Glyph-ByT5: A Customized Text Encoder for Accurate Visual Text Rendering](https://github.com/AIGText/Glyph-ByT5)
 

@@ -22,7 +22,10 @@ from ..ldm.util import log_txt_as_img, exists, instantiate_from_config
 from .ddim_hacked import DDIMSampler
 from ..ldm.modules.distributions.distributions import DiagonalGaussianDistribution
 from .recognizer import TextRecognizer, create_predictor
+from comfy.model_management import total_vram, get_torch_device, text_encoder_offload_device
 
+is_lowvram = (torch.cuda.is_available() and total_vram < 6100)
+device = get_torch_device()
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -441,8 +444,9 @@ class ControlLDM(LatentDiffusion):
         diffusion_model = self.model.diffusion_model
         _cond = torch.cat(cond['c_crossattn'], 1)
         _hint = torch.cat(cond['c_concat'], 1)
-        if self.use_fp16:
-            x_noisy = x_noisy.half()
+        # if self.use_fp16:
+        #     x_noisy = x_noisy.half()
+        x_noisy = x_noisy.to(self.control_model.dtype)
         control = self.control_model(x=x_noisy, timesteps=t, context=_cond, hint=_hint, text_info=cond['text_info'])
         control = [c * scale for c, scale in zip(control, self.control_scales)]
         eps = diffusion_model(x=x_noisy, timesteps=t, context=_cond, control=control, only_mid_control=self.only_mid_control)

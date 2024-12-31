@@ -8,6 +8,8 @@ from ..modules.distributions.distributions import DiagonalGaussianDistribution
 
 from ..util import instantiate_from_config
 from ..modules.ema import LitEma
+from comfy.model_management import get_torch_device, vae_offload_device, soft_empty_cache
+from .....UL_common.common import clean_up
 
 
 class AutoencoderKL(pl.LightningModule):
@@ -80,14 +82,28 @@ class AutoencoderKL(pl.LightningModule):
             self.model_ema(self)
 
     def encode(self, x):
+        self.encoder.to(get_torch_device())
+        self.quant_conv.to(get_torch_device())
+        x = x.to(self.dtype)
         h = self.encoder(x)
         moments = self.quant_conv(h)
         posterior = DiagonalGaussianDistribution(moments)
+        self.encoder.to(vae_offload_device())
+        self.quant_conv.to(vae_offload_device())
+        soft_empty_cache(True)
+        clean_up()
         return posterior
 
     def decode(self, z):
+        self.decoder.to(get_torch_device())
+        self.post_quant_conv.to(get_torch_device())
+        z = z.to(self.dtype)
         z = self.post_quant_conv(z)
         dec = self.decoder(z)
+        self.decoder.to(vae_offload_device())
+        self.post_quant_conv.to(vae_offload_device())
+        soft_empty_cache(True)
+        clean_up()
         return dec
 
     def forward(self, input, sample_posterior=True):

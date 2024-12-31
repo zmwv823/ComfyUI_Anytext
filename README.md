@@ -1,10 +1,8 @@
 # Look at the node tooltip for instruction.
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
-# Font files in `ComfyUI\models\fonts`.
-## Improved custom_node from my older custom_node (repo deleted for too much bugs).
 
-### Option 1: full AnyText checkpoint.
+## Option 1: full AnyText checkpoint.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors
 - fp16: https://hf-mirror.com/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors (China mainland users)
@@ -15,20 +13,21 @@
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-AnyText-full-wf.png)
 
-### Option 2: any sd1.5 checkpoint with anytext_controlnet.
+## Option 2: any sd1.5 checkpoint with anytext_controlnet.
 ### Huggingface:
-- AnyText Control: https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
-- AnyText Control: https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
+- https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
+- https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-AnyText-wf.png)
+
 ### If want chinese prompt without translator, use MiaoBi clip.
 ### Huggingface:
-- AnyText Control: https://huggingface.co/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors
-- AnyText Control: https://hf-mirror.com/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors (China mainland users)
+- https://huggingface.co/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors
+- https://hf-mirror.com/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors (China mainland users)
 ### Workflow in workflow dir:
 ![](./workflow/Img_Gen-AnyText-MiaoBi-wf.png)
 
-## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts.
+## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts in `ComfyUI\models\fonts`.
 ### Huggingface:
 - https://huggingface.co/Sanster/AnyText/blob/main/SourceHanSansSC-Medium.otf
 - https://hf-mirror.com/Sanster/AnyText/blob/main/SourceHanSansSC-Medium.otf (China mainland users)

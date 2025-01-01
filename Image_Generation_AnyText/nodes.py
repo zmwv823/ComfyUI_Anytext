@@ -231,10 +231,9 @@ class UL_AnyTextInputs:
 class UL_AnyTextFontImg:
     @classmethod
     def INPUT_TYPES(self):
-        self.font_files = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
         return {
             "required": {
-                "font": (['Auto_DownLoad'] + self.font_files, {"default": "索尼兰亭.ttf"}),
+                "font": (["None"] + os.listdir(os.path.join(folder_paths.models_dir, "fonts")), {"default": "None"}),
                 "pos_mask": ("MASK", ),
                 "sort_radio": ("BOOLEAN", {"default": True, "label_on": "↔水平排序", "label_off": "↕垂直排序"}), 
                 "font_color_name": (['transparent'] + Pillow_Color_Names, {"default": "white"}),
@@ -267,6 +266,10 @@ class UL_AnyTextFontImg:
             texts  = [' ']
         max_chars = 50
         font_path = os.path.join(folder_paths.models_dir, "fonts", font)
+        
+        if not os.path.isfile(font_path):
+            raise ValueError("Invalid font path.\n无效字体路径。")
+        
         self.font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
         mask_img = tensor2numpy_cv2(pos_mask)
         mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2RGB) # cv2二值图(mask)转rgb

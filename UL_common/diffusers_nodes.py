@@ -47,16 +47,16 @@ class UL_DiffusersCheckpointLoader:
             from .pretrained_config_dirs import SD15_Base_pretrained_dir, SD15_Inpaint_Base_pretrained_dir, SD21_Base_pretrained_dir
             
             config_dir = SD15_Base_pretrained_dir
-            original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'v1-inference_fp16.yaml'))
+            # original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'v1-inference_fp16.yaml'))
             pipe = StableDiffusionPipeline
             
             if unet_num_in_channels == 9: # inpaint
                 config_dir = SD15_Inpaint_Base_pretrained_dir
-                original_config_path = folder_paths.get_full_path_or_raise('configs', 'v1-inpainting-inference.yaml')
+                # original_config_path = folder_paths.get_full_path_or_raise('configs', 'v1-inpainting-inference.yaml')
                 pipe = StableDiffusionInpaintPipeline
             elif 'cond_stage_model.model.ln_final.bias' in state_dict.keys(): # sd2.1 
                 config_dir = SD21_Base_pretrained_dir
-                original_config_path = folder_paths.get_full_path_or_raise('configs', 'v2-inference.yaml')
+                # original_config_path = folder_paths.get_full_path_or_raise('configs', 'v2-inference.yaml')
             
             if unet_only:
                 if debug:
@@ -112,15 +112,15 @@ class UL_DiffusersCheckpointLoader:
             config_dir = SDXL_Base_pretrained_dir
             pipe = StableDiffusionXLPipeline
             
-            original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_base.yaml'))
+            # original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_base.yaml'))
             
-            if unet_num_in_channels == 8:
-                original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_cosxl_base.yaml'))
+            # if unet_num_in_channels == 8:
+            #     original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_cosxl_base.yaml'))
             
             if unet_num_in_channels == 9: # inpaint
                 config_dir = SDXL_Inpaint_Base_pretrained_dir
                 pipe = StableDiffusionXLInpaintPipeline
-                original_config_path=os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl-inpainting_base.yaml'))
+                # original_config_path=os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl-inpainting_base.yaml'))
                 
             if unet_only:
                 if debug:

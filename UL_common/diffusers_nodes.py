@@ -69,7 +69,8 @@ class UL_DiffusersCheckpointLoader:
                 from diffusers import UNet2DConditionModel
                 unet = UNet2DConditionModel.from_single_file(
                     pretrained_model_link_or_path_or_dict=ckpt_path,
-                    original_config=original_config_path,
+                    config=config_dir,
+                    # original_config=original_config_path,
                     torch_dtype=dtype,
                 )
                 pipeline = None
@@ -87,7 +88,7 @@ class UL_DiffusersCheckpointLoader:
                 pipeline = pipe.from_single_file(
                     pretrained_model_link_or_path=ckpt_path,
                     config=config_dir, 
-                    original_config=original_config_path,
+                    # original_config=original_config_path,
                     requires_safety_checker = False, 
                     safety_checker=None,
                     torch_dtype=dtype,
@@ -132,7 +133,8 @@ class UL_DiffusersCheckpointLoader:
                 from diffusers import UNet2DConditionModel
                 unet = UNet2DConditionModel.from_single_file(
                     pretrained_model_link_or_path_or_dict=ckpt_path,
-                    original_config=original_config_path,
+                    config=config_dir,
+                    # original_config=original_config_path,
                     torch_dtype=dtype,
                 )
                 pipeline = None
@@ -150,7 +152,7 @@ class UL_DiffusersCheckpointLoader:
                 pipeline = pipe.from_single_file(
                     pretrained_model_link_or_path=ckpt_path,
                     config=config_dir,
-                    original_config=original_config_path,
+                    # original_config=original_config_path,
                     torch_dtype=dtype,
                 )
                 unet = pipeline.unet

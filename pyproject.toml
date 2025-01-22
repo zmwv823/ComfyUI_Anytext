@@ -3,13 +3,13 @@ name = "anytext"
 description = "Unofficial Simple And Rough Implementation Of [a/AnyText](https://github.com/tyxsspa/AnyText) and [a/Glyph-ByT5] (https://github.com/AIGText/Glyph-ByT5) and [a/JoyType](https://github.com/jdh-algo/JoyType)"
 version = "1.0.0"
 license = {file = "LICENSE"}
-dependencies = ["# AnyText", "pillow>=9.5.0", "numpy<=1.26.4 #numpy<2", "opencv-python", "accelerate", "huggingface_hub", "pytorch_lightning", "ujson", "omegaconf", "easydict", "open_clip_torch", "# Glypg-SDXL", "diffusers", "mmengine", "peft", "webcolors"]
+dependencies = ["# AnyText", "pillow>=9.5.0", "numpy", "opencv-python", "accelerate", "huggingface_hub", "pytorch_lightning", "ujson", "omegaconf", "easydict", "open_clip_torch", "# Glypg-SDXL", "diffusers", "mmengine", "peft", "webcolors"]
 
 [project.urls]
 Repository = "https://github.com/zmwv823/ComfyUI_Anytext"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "zmwv823"
 DisplayName = "ComfyUI_Anytext"
 Icon = ""

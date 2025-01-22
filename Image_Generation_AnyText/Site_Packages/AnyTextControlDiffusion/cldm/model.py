@@ -29,7 +29,7 @@ def create_model(config_path, cond_stage_path=None, use_fp16=False):
         config.model.params.use_fp16 = True
         config.model.params.control_stage_config.params.use_fp16 = True
         config.model.params.unet_config.params.use_fp16 = True
-    model = instantiate_from_config(config.model).cpu()
+    model = instantiate_from_config(config.model)#.cpu()
     model.model_config = config
     print(f'Loaded model config from [{config_path}]')
     return model

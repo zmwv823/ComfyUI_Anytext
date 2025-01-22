@@ -8,8 +8,7 @@ custom_node_root_dir = os.path.dirname(os.path.abspath(__file__))
 fonts_path = os.path.join(folder_paths.models_dir, 'fonts')
 pretrained_configs_dir = os.path.join(custom_node_root_dir, 'assets', 'Pretrained_Configs')
 
-if not os.path.exists(fonts_path): # fonts
-    os.makedirs(fonts_path)
+os.makedirs(fonts_path, exist_ok=True) # fonts
 
 # only import if running as a custom node
 try:
@@ -36,6 +35,11 @@ else:
  ## Image_Process Common
 	from .Image_Process.Common.nodes import NODE_CLASS_MAPPINGS as UL_Image_Process_Common_Nodes
 	NODE_CLASS_MAPPINGS.update(UL_Image_Process_Common_Nodes)
+
+# Data Process 
+ ## Translate
+	from .Data_Process.nodes import NODE_CLASS_MAPPINGS as Translator_Nodes
+	NODE_CLASS_MAPPINGS.update(Translator_Nodes)
 
 # UL common## Common Loader
 	from .UL_common.diffusers_nodes import NODE_CLASS_MAPPINGS as UL_common_loader_Nodes

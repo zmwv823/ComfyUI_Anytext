@@ -36,9 +36,9 @@ class ControlledUnetModel(UNetModel):
         hs = []
         with torch.no_grad():
             t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
-            if self.use_fp16:
-                t_emb = t_emb.half()
-            emb = self.time_embed(t_emb)
+            # if self.use_fp16:
+            #     t_emb = t_emb.half()
+            emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
             h = x.type(self.dtype)
             for module in self.input_blocks:
                 h = module(h, emb, context)
@@ -319,9 +319,9 @@ class ControlNet(nn.Module):
 
     def forward(self, x, hint, text_info, timesteps, context, **kwargs):
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
-        if self.use_fp16:
-            t_emb = t_emb.half()
-        emb = self.time_embed(t_emb)
+        # if self.use_fp16:
+        #     t_emb = t_emb.half()
+        emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
 
         # guided_hint from text_info
         B, C, H, W = x.shape

@@ -1,0 +1,557 @@
+{
+  "last_node_id": 49,
+  "last_link_id": 119,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UL_AnyText_Loader",
+      "pos": [
+        840,
+        -600
+      ],
+      "size": [
+        370,
+        170
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "links": [
+            102,
+            110
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": [
+            101
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "ckpt_name",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyText_Loader"
+      },
+      "widgets_values": [
+        "15\\Counterfeit-V3.0_fix_fp16.safetensors",
+        "control_sd15_anytext_v1_1.safetensors",
+        "None",
+        "auto"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentImage",
+      "pos": [
+        1570,
+        -240
+      ],
+      "size": [
+        210,
+        106
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            115
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        512,
+        512,
+        1
+      ]
+    },
+    {
+      "id": 25,
+      "type": "LoadImage",
+      "pos": [
+        540,
+        -570
+      ],
+      "size": [
+        290,
+        390
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            111
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            118
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "clipspace/clipspace-mask-183085.40000000596.png [input]",
+        "image"
+      ]
+    },
+    {
+      "id": 26,
+      "type": "Reroute",
+      "pos": [
+        1010,
+        -140
+      ],
+      "size": [
+        75,
+        26
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "",
+          "type": "*",
+          "link": 109,
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "STRING",
+          "links": [
+            119
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "showOutputText": false,
+        "horizontal": false
+      }
+    },
+    {
+      "id": 42,
+      "type": "VAEDecode",
+      "pos": [
+        1880,
+        -580
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 105
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 101
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            100
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 43,
+      "type": "PreviewImage",
+      "pos": [
+        1880,
+        -490
+      ],
+      "size": [
+        430,
+        460
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 100
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 44,
+      "type": "UL_AnyText_Sampler",
+      "pos": [
+        1550,
+        -580
+      ],
+      "size": [
+        315,
+        266
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 102
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 113
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 114
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            105
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyText_Sampler"
+      },
+      "widgets_values": [
+        148910612957280,
+        "randomize",
+        20,
+        9,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 48,
+      "type": "UL_AnyTextFormatter",
+      "pos": [
+        900,
+        -390
+      ],
+      "size": [
+        290,
+        170
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            109
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "links": [
+            117
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextFormatter"
+      },
+      "widgets_values": [
+        "close-up of hakurei reimu sitting in a room, with text: \"博丽灵梦\" and \"Emmm\" on the wall."
+      ]
+    },
+    {
+      "id": 49,
+      "type": "UL_AnyTextEncoder",
+      "pos": [
+        1230,
+        -530
+      ],
+      "size": [
+        300,
+        430
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 110
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 118
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "link": 117
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "link": 115
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 111,
+          "shape": 7
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 119,
+          "widget": {
+            "name": "prompt"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            113
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            114
+          ]
+        },
+        {
+          "name": "mask_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_x",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextEncoder"
+      },
+      "widgets_values": [
+        "",
+        "日系筑紫a丸GBK版.ttf",
+        true,
+        true,
+        "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
+        "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
+        false,
+        false
+      ]
+    }
+  ],
+  "links": [
+    [
+      100,
+      42,
+      0,
+      43,
+      0,
+      "IMAGE"
+    ],
+    [
+      101,
+      1,
+      1,
+      42,
+      1,
+      "VAE"
+    ],
+    [
+      102,
+      1,
+      0,
+      44,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      105,
+      44,
+      0,
+      42,
+      0,
+      "LATENT"
+    ],
+    [
+      109,
+      48,
+      0,
+      26,
+      0,
+      "*"
+    ],
+    [
+      110,
+      1,
+      0,
+      49,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      111,
+      25,
+      0,
+      49,
+      4,
+      "IMAGE"
+    ],
+    [
+      113,
+      49,
+      0,
+      44,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      114,
+      49,
+      1,
+      44,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      115,
+      7,
+      0,
+      49,
+      3,
+      "LATENT"
+    ],
+    [
+      117,
+      48,
+      1,
+      49,
+      2,
+      "LIST"
+    ],
+    [
+      118,
+      25,
+      1,
+      49,
+      1,
+      "MASK"
+    ],
+    [
+      119,
+      26,
+      0,
+      49,
+      5,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 3,
+      "title": "Custom translator",
+      "bounding": [
+        940,
+        -200,
+        220,
+        130
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1,
+      "offset": [
+        -440,
+        700
+      ]
+    },
+    "node_versions": {
+      "comfy-core": "0.3.12",
+      "ComfyUI_Anytext": "15ecdb7d50fddd0eecbfbe79c4a46f41fd159f0b"
+    }
+  },
+  "version": 0.4
+}

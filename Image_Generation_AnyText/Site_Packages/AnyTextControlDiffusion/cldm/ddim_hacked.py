@@ -75,6 +75,7 @@ class DDIMSampler(object):
                unconditional_conditioning=None, # this has to come in the same format as the conditioning, # e.g. as encoded tokens, ...
                dynamic_threshold=None,
                ucg_schedule=None,
+               generator=None,
                **kwargs
                ):
         if conditioning is not None:
@@ -115,7 +116,8 @@ class DDIMSampler(object):
                                                     unconditional_guidance_scale=unconditional_guidance_scale,
                                                     unconditional_conditioning=unconditional_conditioning,
                                                     dynamic_threshold=dynamic_threshold,
-                                                    ucg_schedule=ucg_schedule
+                                                    ucg_schedule=ucg_schedule,
+                                                    generator=generator,
                                                     )
         return samples, intermediates
 
@@ -126,11 +128,11 @@ class DDIMSampler(object):
                       mask=None, x0=None, img_callback=None, log_every_t=100,
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None, dynamic_threshold=None,
-                      ucg_schedule=None):
+                      ucg_schedule=None, generator=None):
         device = self.model.betas.device
         b = shape[0]
         if x_T is None:
-            img = torch.randn(shape, device=device)
+            img = torch.randn(shape, generator=generator, device=device)
         else:
             img = x_T
 

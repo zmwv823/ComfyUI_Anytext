@@ -7,7 +7,7 @@ import torch
 from PIL import ImageFont, Image
 from comfy.utils import load_torch_file, ProgressBar
 from .AnyText_scripts.AnyText_pipeline_util import resize_image
-from ..UL_common.common import pil2tensor, get_device_by_name, tensor2numpy_cv2, download_repoid_model_from_huggingface, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
+from ..UL_common.common import pil2tensor, tensor2numpy_cv2, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
 from .. import comfy_temp_dir
 from ..UL_common.pretrained_config_dirs import SD15_Base_pretrained_dir
 from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, soft_empty_cache, vae_offload_device, load_model_gpu
@@ -18,6 +18,8 @@ import copy
 MiaoBi_tokenizer_dir = os.path.join(SD15_Base_pretrained_dir, 'MiaoBi_tokenizer')
 Random_Gen_Mask_path = os.path.join(comfy_temp_dir,  "AnyText_random_mask_pos_img.png")
 
+# is_chinese_prompt = check_chinese(prompt_replace(prompt))
+
 class UL_AnyTextSampler:
     @classmethod
     def INPUT_TYPES(cls):
@@ -26,7 +28,8 @@ class UL_AnyTextSampler:
                 "model": ("AnyText_Model", ),
                 "positive": ("CONDITIONING", ),
                 "negative": ("CONDITIONING", ), 
-                "seed": ("INT", {"default": 88888888, "min": 0, "max": 4294967296}),
+                # "seed": ("INT", {"default": 88888888, "min": 0, "max": 4294967296}),
+                "seed": ("INT", {"default": 88888888, "min": 0, "max": 0xFFFFFFFFFFFFFFFF}),
                 "steps": ("INT", {"default": 20, "min": 1, "max": 100}),
                 "cfg": ("FLOAT", { "default": 9, "min": 1, "max": 99, "step": 0.1}),
                 "strength": ("FLOAT", {"default": 1.00, "min": 0, "max": 2, "step": 0.01}),
@@ -49,9 +52,9 @@ class UL_AnyTextSampler:
         model['model'].model.diffusion_model.to(get_torch_device())
         model['model'].control_model.to(get_torch_device())
         
-        from pytorch_lightning import seed_everything
-        from .AnyText_scripts.cldm.ddim_hacked import DDIMSampler
-        seed_everything(seed)
+        from AnyTextControlDiffusion.cldm.ddim_hacked import DDIMSampler
+        # from pytorch_lightning import seed_everything
+        # seed_everything(seed)
         
         model['model'].control_scales = ([strength] * 13)
         
@@ -69,6 +72,7 @@ class UL_AnyTextSampler:
             unconditional_guidance_scale=cfg,
             unconditional_conditioning=negative[0][0],
             callback=callback, #后端代码有timesteps的callback
+            generator=torch.Generator(get_torch_device()).manual_seed(seed),
         )
         
         if not keep_model_loaded:
@@ -76,10 +80,12 @@ class UL_AnyTextSampler:
             del model['model'].control_model
             del model['model'].cond_stage_model
             del model['model'].embedding_manager
+            soft_empty_cache(True)
         elif keep_model_device and keep_model_loaded and torch.cuda.is_available():
             model['model'].model.diffusion_model.to(unet_offload_device())
             model['model'].control_model.to(text_encoder_offload_device())
             model['model'].embedding_manager.to(text_encoder_offload_device())
+            soft_empty_cache(True)
         
         # model['model'].first_stage_model.to(get_torch_device())
         
@@ -124,7 +130,10 @@ class UL_AnyTextLoader:
     DESCRIPTION = "Miaobi_clip is optional, for chinese prompt text_encode without translator.\nOption 1: load full AnyText ckeckpoint in ckpt_name without controlnet.\nOption 2: load custom sd1.5 ckeckpoint with AnyText control_net.\nmiaobi_clip是可选项，用于输入中文提示词但不使用翻译机。\n选项1： 加载完整的AnyText模型，此时勿加载control_net。\n选项2：加载自定义sd1.5模型和AnyText的control_net。"
 
     def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype):
-        from .AnyText_scripts.cldm.model import create_model
+        import sys
+        AnyTextBackbone_Dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Site_Packages")
+        sys.path.append(AnyTextBackbone_Dir)
+        from AnyTextControlDiffusion.cldm.model import create_model
     
         dtype = get_dtype_by_name(weight_dtype)
         ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
@@ -174,66 +183,12 @@ class UL_AnyTextLoader:
         
         return (model, VAE(copy.deepcopy(model["model"].first_stage_model)), os.path.basename(ckpt_path), )
 
-class UL_AnyTextInputs:
-    @classmethod
-    def INPUT_TYPES(self):
-        self.font_files = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
-        return {
-            "required": {
-                "font_name": (['Auto_DownLoad'] + self.font_files, {"default": "AnyText-Arial-Unicode.ttf"}),
-                "apply_translate": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
-                "translator": (["utrobinmv/t5_translate_en_ru_zh_small_1024", "damo/nlp_csanmt_translation_zh2en", "utrobinmv/t5_translate_en_ru_zh_base_200", "utrobinmv/t5_translate_en_ru_zh_large_1024"],{"default": "utrobinmv/t5_translate_en_ru_zh_small_1024", "tooltip": "Translate models for zh2en.\n中译英模型，t5_small体积小(212MB)但质量一般，nlp体积大(7.35GB)质量高但是需要自行安装依赖`ComfyUI\custom_nodes\ComfyUI_Anytext\requirements-with-nlp-translator.txt`，其余不建议。"}), 
-                "translator_device": (["auto", "cuda", "cpu", "mps", "xpu"],{"default": "auto"}), 
-                "keep_translator_loaded": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
-                "keep_translator_device": ("BOOLEAN", {"default": True, "label_on": "comfy", "label_off": "device"}),
-                "Auto_Download_Path": ("BOOLEAN", {"default": True, "label_on": "models_local本地", "label_off": ".cache缓存", "tooltip": "Cache translator model files to huggingface cache_dir or download into `ComfyUI\models\prompt_generator`.\n缓存翻译模型到huggingface缓存路径或者下载到`ComfyUI\models\prompt_generator`。"}),
-                }
-            }
-
-    RETURN_TYPES = ("AnyText_Inputs", "STRING", )
-    RETURN_NAMES = ("inputs", "font_name", )
-    FUNCTION = "inputs"
-    CATEGORY = "UL Group/Image Generation"
-    TITLE = "AnyText Inputs"
-    DESCRIPTION = ""
-
-    def inputs(self, font_name, apply_translate, translator, translator_device, keep_translator_loaded, keep_translator_device, Auto_Download_Path, show_debug=False):
-        font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
-        from PIL import ImageFont
-        if font_name == "Auto_DownLoad":
-            font_path = os.path.join(folder_paths.models_dir, "fonts", "SourceHanSansSC-Medium.otf")
-            if not os.path.exists(font_path):
-                from huggingface_hub import hf_hub_download as hg_hf_hub_download
-                hg_hf_hub_download(
-                    repo_id="Sanster/AnyText", 
-                    filename="SourceHanSansSC-Medium.otf", 
-                    local_dir=os.path.join(folder_paths.models_dir, "fonts"), 
-                    )
-                
-        font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
-        
-        translator_device = get_device_by_name(translator_device)
-        
-        inputs = {
-            "font": font,
-            "apply_translate": apply_translate,
-            "translator": translator,
-            "show_debug": show_debug,
-            "translator_device": translator_device,
-            "keep_translator_loaded": keep_translator_loaded,
-            "keep_translator_device": keep_translator_device,
-            "Auto_Download_Path": Auto_Download_Path,
-        }
-        
-        return (inputs, os.path.basename(font_path), )
-
-
 class UL_AnyTextFontImg:
     @classmethod
     def INPUT_TYPES(self):
         return {
             "required": {
-                "font": (["None"] + os.listdir(os.path.join(folder_paths.models_dir, "fonts")), {"default": "None"}),
+                "font_name": (["None"] + os.listdir(os.path.join(folder_paths.models_dir, "fonts")), {"default": "None"}),
                 "pos_mask": ("MASK", ),
                 "sort_radio": ("BOOLEAN", {"default": True, "label_on": "↔水平排序", "label_off": "↕垂直排序"}), 
                 "font_color_name": (['transparent'] + Pillow_Color_Names, {"default": "white"}),
@@ -259,18 +214,18 @@ class UL_AnyTextFontImg:
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText FontImg"
 
-    def FontImg(self, font, pos_mask, prompt, width, height, sort_radio, font_color_name, font_color_code, font_color_mode, bg_color_name, bg_color_code, bg_color_mode, font_color_codeR, font_color_codeG, font_color_codeB, font_color_codeA, seperate_by):
+    def FontImg(self, font_name, pos_mask, prompt, width, height, sort_radio, font_color_name, font_color_code, font_color_mode, bg_color_name, bg_color_code, bg_color_mode, font_color_codeR, font_color_codeG, font_color_codeB, font_color_codeA, seperate_by):
         texts = str(prompt).split(seperate_by)
         n_lines = len(texts)
         if len(texts ) == 0:
             texts  = [' ']
         max_chars = 50
-        font_path = os.path.join(folder_paths.models_dir, "fonts", font)
+        font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
         
         if not os.path.isfile(font_path):
             raise ValueError("Invalid font path.\n无效字体路径。")
         
-        self.font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
+        font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
         mask_img = tensor2numpy_cv2(pos_mask)
         mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2RGB) # cv2二值图(mask)转rgb
         mask_img = cv2.bitwise_not(mask_img) # cv2图片取反
@@ -341,7 +296,7 @@ class UL_AnyTextFontImg:
                 text = text[:max_chars]
             gly_scale = 2
             if pre_pos[i].mean() != 0:
-                _, glyphs = draw_glyph2(self.font, text, poly_list[i], scale=gly_scale, width=width, height=height, add_space=False, font_color=font_color)
+                _, glyphs = draw_glyph2(font, text, poly_list[i], scale=gly_scale, width=width, height=height, add_space=False, font_color=font_color)
             glyphs = glyphs.convert('RGBA')
             glyphs = glyphs.resize(size=(board.width, board.height)) # 缩放字体图以匹配输入尺寸
             r,g,b,a = glyphs.split() # 读取字体图片中透明像素
@@ -413,20 +368,21 @@ class UL_AnyTextComposer:
 class UL_AnyTextEncoder:
     @classmethod
     def INPUT_TYPES(cls):
+        font_list = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
         return {
             "required": {
                 "model": ("AnyText_Model", ),
-                "inputs": ("AnyText_Inputs", ),
                 "mask": ("MASK", ),
                 "prompt": ("STRING", {"forceInput": True}),
                 "texts": ("LIST", ),
                 "latent": ("LATENT", ),
+                "font_name": (['Auto_DownLoad'] + font_list, {"default": "AnyText-Arial-Unicode.ttf"}),
                 "mode": ("BOOLEAN", {"default": True, "label_on": "text-generation生成", "label_off": "text-editing文字编辑"}),
                 "sort_radio": ("BOOLEAN", {"default": True, "label_on": "↔水平", "label_off": "↕垂直", "tooltip": "Order of draw texts according to mask position orders. ↕ for y axis. It will draw text-content(“string”) from start-to-end(order) on the mask position from top to bottom. ↔ for x axis .It will draw text-content(“string”) from start-to-end(order) on the mask position from left to right.\n根据遮罩位置顺序决定生成文本的顺序。"}),
                 "a_prompt": ("STRING", {"default": "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks", "multiline": True}),
                 "n_prompt": ("STRING", {"default": "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture", "multiline": True}),
-                "revise_pos": ("BOOLEAN", {"default": False, "tooltip": "Which uses the bounding box of the rendered text as the revised position. However, it is occasionally found that the creativity of the generated text is slightly lower using this method, It dosen’t work in text-edit mode.\n使用边界盒子渲染文字作位置调整。但是发现偶尔会影响生成质量，仅在使用随机生成遮罩时生效。"}),
                 "random_mask": ("BOOLEAN", {"default": False, "tooltip": "Random generate mask, the input mask will be ignored.\n随机生成遮罩，输入的遮罩将被忽略。"}),
+                "revise_pos": ("BOOLEAN", {"default": False, "tooltip": "Which uses the bounding box of the rendered text as the revised position. However, it is occasionally found that the creativity of the generated text is slightly lower using this method, It dosen’t work in text-edit mode.\n使用边界盒子渲染文字作位置调整。但是发现偶尔会影响生成质量，仅在使用随机生成遮罩时生效。"}),
             },
             "optional": {
                 "image": ("IMAGE", ),
@@ -439,9 +395,13 @@ class UL_AnyTextEncoder:
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText Encoder"
     
-    def encoder(self, model, inputs, mask, prompt, texts, latent, mode, sort_radio, a_prompt, n_prompt, revise_pos, random_mask, image=None):
+    def __init__(self):
+        self.font = None
+        self.font_name = None
+    
+    def encoder(self, model, font_name, mask, prompt, texts, latent, mode, sort_radio, a_prompt, n_prompt, revise_pos, random_mask, image=None):
         model['model'].control_model.to(text_encoder_offload_device())
-        model['model'].model.diffusion_model.to(text_encoder_offload_device())
+        model['model'].model.diffusion_model.to(unet_offload_device())
         
         from .AnyText_scripts.AnyText_pipeline import separate_pos_imgs, find_polygon, draw_glyph, draw_glyph2
         from .AnyText_scripts.AnyText_pipeline_util import check_channels
@@ -451,37 +411,20 @@ class UL_AnyTextEncoder:
         
         dtype = model['model'].dtype
         
-        font = inputs["font"]
-        translator = inputs["translator"]
-        Auto_Download_Path = inputs["Auto_Download_Path"]
-        
-        #check if prompt is chinese to decide whether to load translator，检测是否为中文提示词，否则不适用翻译。
-        is_chinese = check_chinese(prompt_replace(prompt))
-        if inputs['apply_translate'] and is_chinese:
-            #如果启用中译英，则提前判断本地是否存在翻译模型，没有则自动下载，以防跑半路报错。
-            # elif loader_out[3] == 'utrobinmv/t5_translate_en_ru_zh_small_1024':
-            if translator == 'utrobinmv/t5_translate_en_ru_zh_small_1024':
-                base_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_small_1024")
-                if Auto_Download_Path and not os.path.exists(os.path.join(base_path, "model.safetensors")):
-                    download_repoid_model_from_huggingface(repo_id=translator, Base_Path=base_path)
-                    
-            elif translator == 'damo/nlp_csanmt_translation_zh2en':
-                from modelscope.hub.snapshot_download import snapshot_download as modelscope_snapshot_download
-                base_path = os.path.join(folder_paths.models_dir, "prompt_generator", "modelscope--damo--nlp_csanmt_translation_zh2en")
-                if Auto_Download_Path and not os.path.exists(os.path.join(base_path, "tf_ckpts", "ckpt-0.data-00000-of-00001")):
-                    modelscope_snapshot_download(translator, local_dir=base_path)
-                    
-            # elif loader_out[3] == 'utrobinmv/t5_translate_en_ru_zh_base_200':
-            elif translator == 'utrobinmv/t5_translate_en_ru_zh_base_200':
-                base_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_base_200")
-                if Auto_Download_Path and not os.path.exists(os.path.join(base_path, "model.safetensors")):
-                    download_repoid_model_from_huggingface(translator, base_path)
-                    
-            # elif loader_out[3] == 'utrobinmv/t5_translate_en_ru_zh_large_1024':
-            elif translator == 'utrobinmv/t5_translate_en_ru_zh_large_1024':
-                base_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_large_1024")
-                if Auto_Download_Path and not os.path.exists(os.path.join(base_path, "model.safetensors")):
-                    download_repoid_model_from_huggingface(translator, base_path)
+        font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
+        if font_name == "Auto_DownLoad":
+            font_path = os.path.join(folder_paths.models_dir, "fonts", "SourceHanSansSC-Medium.otf")
+            if not os.path.exists(font_path):
+                from huggingface_hub import hf_hub_download as hg_hf_hub_download
+                hg_hf_hub_download(
+                    repo_id="Sanster/AnyText", 
+                    filename="SourceHanSansSC-Medium.otf", 
+                    local_dir=os.path.join(folder_paths.models_dir, "fonts"), 
+                    )
+                
+        if self.font_name != font_name: #Avoid duplicate font load.
+            self.font_name = font_name
+            self.font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
                     
         # tensor图片转换为numpy图片
         pos_image = tensor2numpy_cv2(mask)
@@ -600,8 +543,8 @@ class UL_AnyTextEncoder:
                 text = text[:max_chars]
             gly_scale = 2
             if pre_pos[i].mean() != 0:
-                gly_line = draw_glyph(font, text)
-                glyphs, _ = draw_glyph2(font, text, poly_list[i], scale=gly_scale, width=w, height=h, add_space=False)
+                gly_line = draw_glyph(self.font, text)
+                glyphs, _ = draw_glyph2(self.font, text, poly_list[i], scale=gly_scale, width=w, height=h, add_space=False)
                 gly_pos_img = cv2.drawContours(glyphs*255, [poly_list[i]*gly_scale], 0, (255, 255, 255), 1)
                 if revise_pos:
                     resize_gly = cv2.resize(glyphs, (pre_pos[i].shape[1], pre_pos[i].shape[0]))
@@ -656,7 +599,6 @@ class UL_AnyTextFormatter:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "inputs": ("AnyText_Inputs", ),
                 "prompt": ("STRING", {"default": 'close-up of hakurei reimu sitting in a room, with text: "博丽灵梦" on the wall.', "multiline": True, "dynamicPrompts": True}),
             },
             "optional": {
@@ -670,15 +612,9 @@ class UL_AnyTextFormatter:
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText Formatter"
     
-    def formatter(self, inputs, prompt):
+    def formatter(self, prompt):
         prompt, texts = modify_prompt(
             prompt=prompt,
-            translator=inputs['translator'],
-            Auto_Download_Path=inputs['Auto_Download_Path'],
-            translator_device=inputs['translator_device'],
-            keep_translator_loaded=inputs['keep_translator_loaded'],
-            keep_translator_device=inputs['keep_translator_device'],
-            apply_translate=inputs['apply_translate'],
         )
         return (prompt, texts)
 
@@ -714,7 +650,7 @@ class UL_AnyTextLoaderTest:
             self.raised = True
             raise ValueError("If input c_model, AnyText Control model is essential, or text mask will not work.\n如果输入c_model，则必须输入AnyText Control model，否则文字遮罩无效。")
             
-        from .AnyText_scripts.cldm.model import create_model
+        from AnyTextControlDiffusion.cldm.model import create_model
     
         dtype = get_dtype_by_name(weight_dtype)
         
@@ -787,7 +723,6 @@ class UL_AnyTextLoaderTest:
 # Node class and display name mappings
 NODE_CLASS_MAPPINGS = {
     "UL_AnyText_Sampler": UL_AnyTextSampler,
-    "UL_AnyText_Inputs": UL_AnyTextInputs,
     "UL_AnyText_Loader": UL_AnyTextLoader,
     "UL_AnyText_FontImg": UL_AnyTextFontImg,
     "UL_AnyText_Composer": UL_AnyTextComposer,
@@ -895,7 +830,8 @@ def check_chinese(text):
             return True
     return False
 
-def modify_prompt(prompt, translator, Auto_Download_Path, translator_device, keep_translator_loaded, keep_translator_device, apply_translate):
+def modify_prompt(prompt):
+    old_prompt = prompt
     PLACE_HOLDER = '*'
     prompt = prompt.replace('“', '"')
     prompt = prompt.replace('”', '"')
@@ -906,43 +842,7 @@ def modify_prompt(prompt, translator, Auto_Download_Path, translator_device, kee
     else:
         for s in strs:
             prompt = prompt.replace(f'"{s}"', f' {PLACE_HOLDER} ', 1)
-    if check_chinese(prompt) and apply_translate:
-        if translator is None:
-            return None, None
-        old_prompt = prompt
-        
-        from ..Data_Process.utils import t5_translate_en_ru_zh, nlp_csanmt_translation_zh2en
-        
-        if translator == 'utrobinmv/t5_translate_en_ru_zh_small_1024':
-            zh2en_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_small_1024")
-            if not os.path.exists(os.path.join(zh2en_path, "model.safetensors")) and not Auto_Download_Path:
-                zh2en_path = 'utrobinmv/t5_translate_en_ru_zh_small_1024'
-            prompt, _, _ = t5_translate_en_ru_zh('en', prompt + ' .', zh2en_path, translator_device, keep_translator_loaded, keep_model_device=keep_translator_device)
-            prompt = prompt[0]
-            
-        elif translator == 'utrobinmv/t5_translate_en_ru_zh_base_200':
-            zh2en_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_base_200")
-            if not os.path.exists(os.path.join(zh2en_path, "model.safetensors")) and not Auto_Download_Path:
-                zh2en_path = 'utrobinmv/t5_translate_en_ru_zh_base_200'
-            prompt, _, _ = t5_translate_en_ru_zh('en', prompt + ' .', zh2en_path, translator_device, keep_translator_loaded, keep_model_device=keep_translator_device)
-            prompt = prompt[0]
-            
-        elif translator == 'utrobinmv/t5_translate_en_ru_zh_large_1024':
-            zh2en_path = os.path.join(folder_paths.models_dir, "prompt_generator", "models--utrobinmv--t5_translate_en_ru_zh_large_1024")
-            if not os.path.exists(os.path.join(zh2en_path, "model.safetensors")) and not Auto_Download_Path:
-                zh2en_path = 'utrobinmv/t5_translate_en_ru_zh_large_1024'
-            prompt, _, _ = t5_translate_en_ru_zh('en', prompt + ' .', zh2en_path, translator_device, keep_translator_loaded, keep_model_device=keep_translator_device)
-            prompt = prompt[0]
-            
-        else:
-            nlp_device = 'gpu'
-            if 'cpu' in translator_device.type:
-                nlp_device = 'cpu'
-            zh2en_path = os.path.join(folder_paths.models_dir, 'prompt_generator', 'modelscope--damo--nlp_csanmt_translation_zh2en')
-            if not os.path.exists(os.path.join(zh2en_path, "tf_ckpts", "ckpt-0.data-00000-of-00001")) and not Auto_Download_Path:
-                zh2en_path = "damo/nlp_csanmt_translation_zh2en"
-            prompt = nlp_csanmt_translation_zh2en(nlp_device, prompt + ' .', zh2en_path)['translation']
-        print(f'Translate: {old_prompt} --> {prompt}')
+    print(f'\033[93mFormat prompt: {old_prompt} --> {prompt}\033[0m')
     return prompt, strs
 
 def arr2tensor(arr, bs, dtype):

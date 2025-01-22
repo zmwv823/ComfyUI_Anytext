@@ -1,4 +1,3 @@
-# AnyText
 pillow>=9.5.0
 numpy
 opencv-python
@@ -10,7 +9,7 @@ omegaconf
 easydict
 open_clip_torch
 
-# AnyText nlp translator
+#nlp translator
 tensorflow
 modelscope
 addict
@@ -18,10 +17,4 @@ datasets==2.18.0
 simplejson
 sortedcontainers
 subword_nmt
-
-# Glypg-SDXL
-diffusers
-mmengine
-peft
-webcolors
 

@@ -44,7 +44,7 @@ class UL_DiffusersCheckpointLoader:
         if out_blocks == 384: # sd1.5 or sd2.1
             unet_num_in_channels = state_dict['model.diffusion_model.input_blocks.0.0.weight'].shape[1] # torch.Size, cosxl: torch.Size([320, 8, 3, 3]) sd1.5、sd2.1、sdxl base: torch.Size([320, 4, 3, 3]) inpaint: torch.Size([320, 9, 3, 3]).
             from diffusers import StableDiffusionPipeline, StableDiffusionInpaintPipeline
-            from .pretrained_config_dirs import SD15_Base_pretrained_dir, SD15_Inpaint_Base_pretrained_dir, SD21_Base_pretrained_dir
+            from .pretrained_config_dirs import SD15_Base_pretrained_dir, SD15_Inpaint_Base_pretrained_dir, SD21_Base_pretrained_dir, SDXL_CosXL_pretrained_dir
             
             config_dir = SD15_Base_pretrained_dir
             # original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'v1-inference_fp16.yaml'))
@@ -114,7 +114,8 @@ class UL_DiffusersCheckpointLoader:
             
             # original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_base.yaml'))
             
-            # if unet_num_in_channels == 8:
+            if unet_num_in_channels == 8:
+                config_dir = SDXL_CosXL_pretrained_dir
             #     original_config_path = os.path.join(folder_paths.get_full_path_or_raise('configs', 'sd_xl_cosxl_base.yaml'))
             
             if unet_num_in_channels == 9: # inpaint

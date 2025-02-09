@@ -192,9 +192,9 @@ class TextRecognizer(object):
                 # max_wh_ratio = max(max_wh_ratio, wh_ratio)  # comment to not use different ratio
             for ino in range(beg_img_no, end_img_no):
                 norm_img = self.resize_norm_img(img_list[indices[ino]], max_wh_ratio)
-                # if self.use_fp16:
-                #     norm_img = norm_img.half()
-                norm_img = norm_img.unsqueeze(0).to(next(self.predictor.parameters()).dtype)
+                if self.use_fp16:
+                    norm_img = norm_img.half()
+                norm_img = norm_img.unsqueeze(0)#.to(next(self.predictor.parameters()).dtype)
                 norm_img_batch.append(norm_img)
             norm_img_batch = torch.cat(norm_img_batch, dim=0)
             if show_debug:

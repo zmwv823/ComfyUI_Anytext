@@ -36,9 +36,10 @@ class ControlledUnetModel(UNetModel):
         hs = []
         with torch.no_grad():
             t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
-            # if self.use_fp16:
-            #     t_emb = t_emb.half()
-            emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
+            if self.use_fp16:
+                t_emb = t_emb.half()
+            # emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
+            emb = self.time_embed(t_emb)
             h = x.type(self.dtype)
             for module in self.input_blocks:
                 h = module(h, emb, context)
@@ -319,9 +320,10 @@ class ControlNet(nn.Module):
 
     def forward(self, x, hint, text_info, timesteps, context, **kwargs):
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
-        # if self.use_fp16:
-        #     t_emb = t_emb.half()
-        emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
+        if self.use_fp16:
+            t_emb = t_emb.half()
+        # emb = self.time_embed(t_emb.to(next(self.time_embed.parameters()).dtype))
+        emb = self.time_embed(t_emb)
 
         # guided_hint from text_info
         B, C, H, W = x.shape
@@ -444,9 +446,9 @@ class ControlLDM(LatentDiffusion):
         diffusion_model = self.model.diffusion_model
         _cond = torch.cat(cond['c_crossattn'], 1)
         _hint = torch.cat(cond['c_concat'], 1)
-        # if self.use_fp16:
-        #     x_noisy = x_noisy.half()
-        x_noisy = x_noisy.to(self.control_model.dtype)
+        if self.use_fp16:
+            x_noisy = x_noisy.half()
+        # x_noisy = x_noisy.to(self.control_model.dtype)
         control = self.control_model(x=x_noisy, timesteps=t, context=_cond, hint=_hint, text_info=cond['text_info'])
         control = [c * scale for c, scale in zip(control, self.control_scales)]
         eps = diffusion_model(x=x_noisy, timesteps=t, context=_cond, control=control, only_mid_control=self.only_mid_control)

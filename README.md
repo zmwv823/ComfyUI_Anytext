@@ -21,12 +21,12 @@
 ![](./example_workflows/T2I-AnyText.png)
 ![](./example_workflows/T2I-AnyText-Translator.png)
 
-### If want chinese prompt without translator, use MiaoBi clip.
-### Huggingface:
-- https://huggingface.co/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors
-- https://hf-mirror.com/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors (China mainland users)
-### Workflow in example_workflows dir:
-![](./example_workflows/Img_Gen-AnyText-MiaoBi-wf.png)
+### ~~If want chinese prompt without translator, use MiaoBi clip.~~(Not recommended, will be removed in future.)
+### ~~Huggingface:~~
+- ~~https://huggingface.co/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors ()~~
+- ~~https://hf-mirror.com/ShineChen1024/MiaoBi/blob/main/miaobi_beta0.9/text_encoder/model.safetensors (China mainland users)~~
+### ~~Workflow in example_workflows dir:~~
+![](./example_workflows/T2I-AnyText-MiaoBi.png)
 
 ## Font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts in `ComfyUI\models\fonts`.
 ### Huggingface:

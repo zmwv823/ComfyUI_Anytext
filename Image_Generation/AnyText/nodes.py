@@ -15,7 +15,7 @@ import folder_paths
 import einops
 import copy
 import latent_preview
-from ...UL_common.common import FakeComfyModel
+from comfy.latent_formats import SD15
 
 MiaoBi_tokenizer_dir = os.path.join(SD15_Base_pretrained_dir, 'MiaoBi_tokenizer')
 Random_Gen_Mask_path = os.path.join(comfy_temp_dir,  "AnyText_random_mask_pos_img.png")
@@ -57,10 +57,7 @@ class UL_AnyTextSampler:
         model.control_scales = ([strength] * 13)
         
         ddim_sampler = DDIMSampler(model, device=get_torch_device())
-        # pbar = ProgressBar(steps)
-        # def callback(*_):
-        #     pbar.update(1)
-        callback = latent_preview.prepare_callback(FakeComfyModel("SD15"), steps) #latent preview
+        callback = latent_preview.prepare_callback(model, steps) #latent preview
         latents, intermediates = ddim_sampler.sample(
             S=steps, 
             batch_size=positive[0][1]['batch_size'],
@@ -176,6 +173,9 @@ class UL_AnyTextLoader:
         clean_up()
         
         model.eval().to(get_torch_device(), dtype)
+        
+        model.__setattr__("load_device", get_torch_device())
+        model.model.__setattr__("latent_format", SD15())
         
         return (model, VAE(copy.deepcopy(model.first_stage_model)), os.path.basename(ckpt_path), )
 
@@ -710,6 +710,9 @@ class UL_AnyTextLoaderTest:
         clean_up()
         
         model.eval().to(get_torch_device(), dtype)
+        
+        model.__setattr__("load_device", get_torch_device())
+        model.model.__setattr__("latent_format", SD15())
         
         return (model, VAE(copy.deepcopy(model.first_stage_model.to(vae_offload_device()))) if vae==None else vae, os.path.basename(ckpt_path), )
 

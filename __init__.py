@@ -20,7 +20,7 @@ else:
 
 # Image Generation
   ## AnyText
-	from .Image_Generation_AnyText.nodes import NODE_CLASS_MAPPINGS as AnyText_Nodes
+	from .Image_Generation.AnyText.nodes import NODE_CLASS_MAPPINGS as AnyText_Nodes
 	NODE_CLASS_MAPPINGS.update(AnyText_Nodes)
  
   ## Glyph-SDXL

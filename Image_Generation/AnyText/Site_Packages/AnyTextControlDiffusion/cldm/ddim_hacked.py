@@ -170,7 +170,8 @@ class DDIMSampler(object):
                                       unconditional_conditioning=unconditional_conditioning,
                                       dynamic_threshold=dynamic_threshold)
             img, pred_x0 = outs
-            if callback: callback(i)
+            # if callback: callback(i)
+            if callback: callback(i, pred_x0, pred_x0, total_steps) #for comfy preview
             if img_callback: img_callback(pred_x0, i)
 
             if index % log_every_t == 0 or index == total_steps - 1:

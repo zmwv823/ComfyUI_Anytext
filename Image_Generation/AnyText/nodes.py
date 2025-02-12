@@ -5,15 +5,17 @@ import cv2
 import numpy as np
 import torch
 from PIL import ImageFont, Image
-from comfy.utils import load_torch_file, ProgressBar
+from comfy.utils import load_torch_file
 from .AnyText_scripts.AnyText_pipeline_util import resize_image
-from ..UL_common.common import pil2tensor, tensor2numpy_cv2, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
-from .. import comfy_temp_dir
-from ..UL_common.pretrained_config_dirs import SD15_Base_pretrained_dir
+from ...UL_common.common import pil2tensor, tensor2numpy_cv2, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
+from ... import comfy_temp_dir
+from ...UL_common.pretrained_config_dirs import SD15_Base_pretrained_dir
 from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, soft_empty_cache, vae_offload_device, load_model_gpu
 import folder_paths
 import einops
 import copy
+import latent_preview
+from ...UL_common.common import FakeComfyModel
 
 MiaoBi_tokenizer_dir = os.path.join(SD15_Base_pretrained_dir, 'MiaoBi_tokenizer')
 Random_Gen_Mask_path = os.path.join(comfy_temp_dir,  "AnyText_random_mask_pos_img.png")
@@ -39,8 +41,6 @@ class UL_AnyTextSampler:
             },
         }
 
-    # RETURN_TYPES = ("IMAGE", "LATENT", )
-    # RETURN_NAMES = ("image", "latent", )
     RETURN_TYPES = ("LATENT", )
     RETURN_NAMES = ("latent", )
     CATEGORY = "UL Group/Image Generation"
@@ -49,19 +49,18 @@ class UL_AnyTextSampler:
     DESCRIPTION = "AnyText: Multilingual Visual Text Generation And Editing.\nAnyText comprises a diffusion pipeline with two primary elements: an auxiliary latent module and a text embedding module. The former uses inputs like text glyph, position, and masked image to generate latent features for text generation or editing. The latter employs an OCR model for encoding stroke data as embeddings, which blend with image caption embeddings from the tokenizer to generate texts that seamlessly integrate with the background. We employed text-control diffusion loss and text perceptual loss for training to further enhance writing accuracy.\nAnyText多语言文字生成与编辑\n通过创新性的算法设计，可以支持中文、英语、日语、韩语等多语言的文字生成，还支持对输入图片中的文字内容进行编辑。本模型所涉及的文字生成技术为电商海报、Logo设计、创意涂鸦、表情包等新型AIGC应用提供了可能性。\nAnyText主要基于扩散（Diffusion）模型，包含两个核心模块：隐空间辅助模块（Auxiliary Latent Module）和文本嵌入模块（Text Embedding Module）。其中，隐空间辅助模块对三类辅助信息（字形、文字位置和掩码图像）进行编码并构建隐空间特征图像，用来辅助视觉文字的生成；文本嵌入模块则将描述词中的语义部分与待生成文本的字形部分解耦，使用图像编码模块单独提取字形信息后再与语义信息做融合，既有助于文字的书写精度，也有利于提升文字与背景的一致性。训练阶段，除了使用扩散模型常用的噪声预测损失，我们还增加了文本感知损失，在图像空间对每个生成文本区域进行像素级的监督，以进一步提升文字书写精度。"
 
     def sample(self, model, positive, negative, seed, steps, cfg, strength, eta, keep_model_loaded, keep_model_device):
-        model['model'].model.diffusion_model.to(get_torch_device())
-        model['model'].control_model.to(get_torch_device())
+        model.model.diffusion_model.to(get_torch_device())
+        model.control_model.to(get_torch_device())
         
         from AnyTextControlDiffusion.cldm.ddim_hacked import DDIMSampler
-        # from pytorch_lightning import seed_everything
-        # seed_everything(seed)
         
-        model['model'].control_scales = ([strength] * 13)
+        model.control_scales = ([strength] * 13)
         
-        ddim_sampler = DDIMSampler(model['model'], device=get_torch_device())
-        pbar = ProgressBar(steps)
-        def callback(*_):
-            pbar.update(1)
+        ddim_sampler = DDIMSampler(model, device=get_torch_device())
+        # pbar = ProgressBar(steps)
+        # def callback(*_):
+        #     pbar.update(1)
+        callback = latent_preview.prepare_callback(FakeComfyModel("SD15"), steps) #latent preview
         latents, intermediates = ddim_sampler.sample(
             S=steps, 
             batch_size=positive[0][1]['batch_size'],
@@ -71,20 +70,21 @@ class UL_AnyTextSampler:
             eta=eta,
             unconditional_guidance_scale=cfg,
             unconditional_conditioning=negative[0][0],
-            callback=callback, #后端代码有timesteps的callback
+            callback=callback, #后端代码有timesteps的callback，已经魔改支持latent preview
             generator=torch.Generator(get_torch_device()).manual_seed(seed),
         )
         
         if not keep_model_loaded:
-            del model['model'].model.diffusion_model
-            del model['model'].control_model
-            del model['model'].cond_stage_model
-            del model['model'].embedding_manager
+            del model.model.diffusion_model
+            del model.control_model
+            del model.cond_stage_model
+            del model.embedding_manager
+            del model.text_predictor
             soft_empty_cache(True)
         elif keep_model_device and keep_model_loaded and torch.cuda.is_available():
-            model['model'].model.diffusion_model.to(unet_offload_device())
-            model['model'].control_model.to(text_encoder_offload_device())
-            model['model'].embedding_manager.to(text_encoder_offload_device())
+            model.model.diffusion_model.to(unet_offload_device())
+            model.control_model.to(text_encoder_offload_device())
+            model.embedding_manager.to(text_encoder_offload_device())
             soft_empty_cache(True)
         
         # model['model'].first_stage_model.to(get_torch_device())
@@ -177,11 +177,7 @@ class UL_AnyTextLoader:
         
         model.eval().to(get_torch_device(), dtype)
         
-        model = {
-            'model': model,
-        }
-        
-        return (model, VAE(copy.deepcopy(model["model"].first_stage_model)), os.path.basename(ckpt_path), )
+        return (model, VAE(copy.deepcopy(model.first_stage_model)), os.path.basename(ckpt_path), )
 
 class UL_AnyTextFontImg:
     @classmethod
@@ -400,8 +396,8 @@ class UL_AnyTextEncoder:
         self.font_name = None
     
     def encoder(self, model, font_name, mask, prompt, texts, latent, mode, sort_radio, a_prompt, n_prompt, revise_pos, random_mask, image=None):
-        model['model'].control_model.to(text_encoder_offload_device())
-        model['model'].model.diffusion_model.to(unet_offload_device())
+        model.control_model.to(text_encoder_offload_device())
+        model.model.diffusion_model.to(unet_offload_device())
         
         from .AnyText_scripts.AnyText_pipeline import separate_pos_imgs, find_polygon, draw_glyph, draw_glyph2
         from .AnyText_scripts.AnyText_pipeline_util import check_channels
@@ -409,7 +405,7 @@ class UL_AnyTextEncoder:
         max_chars = 50
         batch_size, height, width = latent["samples"].shape[0], latent["samples"].shape[2] * 8, latent["samples"].shape[3] * 8 # B, C, H, W
         
-        dtype = model['model'].dtype
+        dtype = model.model.diffusion_model.dtype
         
         font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
         if font_name == "Auto_DownLoad":
@@ -423,7 +419,6 @@ class UL_AnyTextEncoder:
                     )
                 
         if self.font_name != font_name: #Avoid duplicate font load.
-            self.font_name = font_name
             self.font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
                     
         # tensor图片转换为numpy图片
@@ -573,20 +568,22 @@ class UL_AnyTextEncoder:
         masked_img = np.transpose(masked_img, (2, 0, 1))
         masked_img = torch.from_numpy(masked_img.copy()).float().to(get_torch_device(), dtype)
         
-        model['model'].first_stage_model.to(get_torch_device())
-        encoder_posterior = model['model'].encode_first_stage(masked_img[None, ...])
-        masked_x = (model['model'].get_first_stage_encoding(encoder_posterior).detach()).to(dtype)
-        model['model'].first_stage_model.to(text_encoder_offload_device())
+        model.first_stage_model.to(get_torch_device())
+        encoder_posterior = model.encode_first_stage(masked_img[None, ...])
+        masked_x = (model.get_first_stage_encoding(encoder_posterior).detach()).to(dtype)
+        model.first_stage_model.to(text_encoder_offload_device())
         
         info['masked_x'] = torch.cat([masked_x for _ in range(batch_size)], dim=0)
         hint = arr2tensor(np_hint, batch_size, dtype)
         
-        model['model'].cond_stage_model.to(get_torch_device())
-        model['model'].embedding_manager.to(get_torch_device())
-        cond = model["model"].get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[anytext_prompt + ' , ' + a_prompt] * batch_size], text_info=info))
-        un_cond = model["model"].get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[n_prompt] * batch_size], text_info=info))
-        model['model'].cond_stage_model.to(text_encoder_offload_device())
-        model['model'].embedding_manager.to(text_encoder_offload_device())
+        model.cond_stage_model.to(get_torch_device())
+        model.embedding_manager.to(get_torch_device())
+        model.text_predictor.to(get_torch_device())
+        cond = model.get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[anytext_prompt + ' , ' + a_prompt] * batch_size], text_info=info))
+        un_cond = model.get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[n_prompt] * batch_size], text_info=info))
+        model.cond_stage_model.to(text_encoder_offload_device())
+        model.embedding_manager.to(text_encoder_offload_device())
+        model.text_predictor.to(text_encoder_offload_device())
         
         if torch.cuda.is_available():
             soft_empty_cache(True)
@@ -714,11 +711,7 @@ class UL_AnyTextLoaderTest:
         
         model.eval().to(get_torch_device(), dtype)
         
-        model = {
-            'model': model,
-        }
-        
-        return (model, VAE(copy.deepcopy(model["model"].first_stage_model.to(vae_offload_device()))) if vae==None else vae, os.path.basename(ckpt_path), )
+        return (model, VAE(copy.deepcopy(model.first_stage_model.to(vae_offload_device()))) if vae==None else vae, os.path.basename(ckpt_path), )
 
 # Node class and display name mappings
 NODE_CLASS_MAPPINGS = {
@@ -733,13 +726,13 @@ NODE_CLASS_MAPPINGS = {
 
 
 def check_overlap_polygon(rect_pts1, rect_pts2):
-            poly1 = cv2.convexHull(rect_pts1)
-            poly2 = cv2.convexHull(rect_pts2)
-            rect1 = cv2.boundingRect(poly1)
-            rect2 = cv2.boundingRect(poly2)
-            if rect1[0] + rect1[2] >= rect2[0] and rect2[0] + rect2[2] >= rect1[0] and rect1[1] + rect1[3] >= rect2[1] and rect2[1] + rect2[3] >= rect1[1]:
-                return True
-            return False
+    poly1 = cv2.convexHull(rect_pts1)
+    poly2 = cv2.convexHull(rect_pts2)
+    rect1 = cv2.boundingRect(poly1)
+    rect2 = cv2.boundingRect(poly2)
+    if rect1[0] + rect1[2] >= rect2[0] and rect2[0] + rect2[2] >= rect1[0] and rect1[1] + rect1[3] >= rect2[1] and rect2[1] + rect2[3] >= rect1[1]:
+        return True
+    return False
         
 def count_lines(prompt):
     prompt = prompt.replace('“', '"').replace('”', '"')

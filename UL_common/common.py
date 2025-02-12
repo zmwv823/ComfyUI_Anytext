@@ -6,6 +6,9 @@ from PIL import Image
 import gc
 import folder_paths
 import cv2
+from comfy.latent_formats import SDXL, SD15
+
+device = mm.get_torch_device()
 
 def tensor2numpy_cv2(tensor_img):
     arr_img = tensor_img.numpy()[0] * 255
@@ -505,3 +508,14 @@ def comfy_clean_vram(**kwargs):
         print("   - Unable to clear cache")
     #time.sleep(2) # why?
     return (list(kwargs.values()))
+    
+# A couple of classes with the information needed by Comfy_UI to show the preview
+class FakeComfyModelModel(object):
+    def __init__(self, model_type):
+        self.latent_format = SDXL() if model_type == "SDXL" else SD15()
+
+
+class FakeComfyModel(object):
+    def __init__(self, model_type):
+        self.load_device = device
+        self.model = FakeComfyModelModel(model_type)

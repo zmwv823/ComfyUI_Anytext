@@ -1,8 +1,5 @@
-from transformers.models.bert.tokenization_bert import VOCAB_FILES_NAMES, logger, load_vocab, BasicTokenizer, WordpieceTokenizer
-from transformers.tokenization_utils import PreTrainedTokenizer
+from transformers.models.bert.tokenization_bert import *
 import os
-from typing import List, Optional, Tuple
-import collections
 
 
 class CLIPTokenizerRoberta(PreTrainedTokenizer):

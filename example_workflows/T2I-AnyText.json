@@ -1,20 +1,20 @@
 {
-  "last_node_id": 24,
-  "last_link_id": 36,
+  "last_node_id": 33,
+  "last_link_id": 54,
   "nodes": [
     {
       "id": 10,
       "type": "UL_AnyTextFormatter",
       "pos": [
-        230,
-        670
+        -200,
+        440
       ],
       "size": [
         320,
-        160
+        120
       ],
       "flags": {},
-      "order": 5,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -22,8 +22,7 @@
           "name": "prompt",
           "type": "STRING",
           "links": [
-            34,
-            36
+            53
           ],
           "slot_index": 0
         },
@@ -47,8 +46,8 @@
       "id": 11,
       "type": "UL_AnyText_Loader",
       "pos": [
-        230,
-        450
+        -650,
+        700
       ],
       "size": [
         315,
@@ -64,7 +63,9 @@
           "type": "AnyText_Model",
           "links": [
             15,
-            21
+            21,
+            37,
+            39
           ],
           "slot_index": 0
         },
@@ -72,8 +73,10 @@
           "name": "vae",
           "type": "VAE",
           "links": [
-            25
-          ]
+            25,
+            38
+          ],
+          "slot_index": 1
         },
         {
           "name": "ckpt_name",
@@ -95,8 +98,8 @@
       "id": 12,
       "type": "LoadImage",
       "pos": [
-        -100,
-        470
+        -650,
+        930
       ],
       "size": [
         300,
@@ -111,7 +114,8 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            27
+            27,
+            44
           ],
           "slot_index": 0
         },
@@ -119,8 +123,10 @@
           "name": "MASK",
           "type": "MASK",
           "links": [
-            16
-          ]
+            16,
+            45
+          ],
+          "slot_index": 1
         }
       ],
       "properties": {
@@ -135,15 +141,15 @@
       "id": 13,
       "type": "UL_AnyTextEncoder",
       "pos": [
-        580,
-        460
+        -210,
+        610
       ],
       "size": [
         340,
         400
       ],
       "flags": {},
-      "order": 8,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -175,7 +181,7 @@
         {
           "name": "prompt",
           "type": "STRING",
-          "link": 35,
+          "link": 53,
           "widget": {
             "name": "prompt"
           }
@@ -226,15 +232,15 @@
       "id": 14,
       "type": "EmptyLatentImage",
       "pos": [
-        280,
-        900
+        -590,
+        1390
       ],
       "size": [
         210,
         106
       ],
       "flags": {},
-      "order": 2,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -242,15 +248,17 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            20
-          ]
+            20,
+            54
+          ],
+          "slot_index": 0
         }
       ],
       "properties": {
         "Node name for S&R": "EmptyLatentImage"
       },
       "widgets_values": [
-        576,
+        512,
         512,
         1
       ]
@@ -259,15 +267,15 @@
       "id": 15,
       "type": "UL_AnyText_Sampler",
       "pos": [
-        950,
-        450
+        140,
+        440
       ],
       "size": [
         320,
         580
       ],
       "flags": {},
-      "order": 10,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -300,10 +308,10 @@
         "Node name for S&R": "UL_AnyText_Sampler"
       },
       "widgets_values": [
-        422201625269032,
-        "randomize",
+        105404283472242,
+        "fixed",
         20,
-        9,
+        5,
         1,
         0,
         true,
@@ -314,15 +322,15 @@
       "id": 16,
       "type": "VAEDecode",
       "pos": [
-        1310,
-        460
+        490,
+        430
       ],
       "size": [
         210,
         46
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -355,8 +363,8 @@
       "id": 17,
       "type": "PreviewImage",
       "pos": [
-        1290,
-        560
+        470,
+        550
       ],
       "size": [
         430,
@@ -379,15 +387,268 @@
       "widgets_values": []
     },
     {
-      "id": 19,
-      "type": "UL_Translator",
+      "id": 25,
+      "type": "UL_AnyTextFormatter",
       "pos": [
-        560,
-        190
+        -230,
+        1110
       ],
       "size": [
-        400,
-        220
+        320,
+        160
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            50
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "links": [
+            43
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextFormatter"
+      },
+      "widgets_values": [
+        "一个儿童蜡笔画，森林里有一个可爱的蘑菇形状的房子，标题是“哎呀”和\"森林小屋\"。"
+      ]
+    },
+    {
+      "id": 26,
+      "type": "UL_AnyTextEncoder",
+      "pos": [
+        110,
+        1270
+      ],
+      "size": [
+        340,
+        410
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 37
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 45
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "link": 43
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "link": 54
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 44,
+          "shape": 7
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 52,
+          "widget": {
+            "name": "prompt"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            47
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            48
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "mask_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_x",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextEncoder"
+      },
+      "widgets_values": [
+        "",
+        "索尼兰亭.ttf",
+        true,
+        true,
+        "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
+        "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
+        false,
+        false
+      ]
+    },
+    {
+      "id": 28,
+      "type": "UL_AnyText_Sampler",
+      "pos": [
+        470,
+        1110
+      ],
+      "size": [
+        320,
+        580
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 39
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 47
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 48
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            40
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyText_Sampler"
+      },
+      "widgets_values": [
+        248242901731049,
+        "fixed",
+        20,
+        5,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 29,
+      "type": "VAEDecode",
+      "pos": [
+        800,
+        1120
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 40
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 38
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            41
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 30,
+      "type": "PreviewImage",
+      "pos": [
+        810,
+        1230
+      ],
+      "size": [
+        430,
+        450
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 41
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 31,
+      "type": "UL_Translator",
+      "pos": [
+        -210,
+        1490
+      ],
+      "size": [
+        290,
+        210
       ],
       "flags": {},
       "order": 7,
@@ -396,12 +657,12 @@
         {
           "name": "model",
           "type": "TRANSLATE_MODEL",
-          "link": 32
+          "link": 49
         },
         {
           "name": "string",
           "type": "STRING",
-          "link": 36,
+          "link": 50,
           "widget": {
             "name": "string"
           }
@@ -412,7 +673,7 @@
           "name": "string",
           "type": "STRING",
           "links": [
-            33
+            51
           ],
           "slot_index": 0
         }
@@ -421,9 +682,9 @@
         "Node name for S&R": "UL_Translator"
       },
       "widgets_values": [
-        "一个装饰华丽的蛋糕，上面用奶油写着“阿里云”和\"APSARA\"",
+        "",
         "Chinese (Simplified)",
-        "English",
+        "Chinese (Simplified)",
         512,
         false,
         true,
@@ -431,15 +692,15 @@
       ]
     },
     {
-      "id": 20,
+      "id": 32,
       "type": "UL_TranslatorLoader",
       "pos": [
-        90,
-        240
+        -230,
+        1310
       ],
       "size": [
-        410,
-        130
+        315,
+        126
       ],
       "flags": {},
       "order": 4,
@@ -450,7 +711,7 @@
           "name": "model",
           "type": "TRANSLATE_MODEL",
           "links": [
-            32
+            49
           ]
         },
         {
@@ -463,30 +724,30 @@
         "Node name for S&R": "UL_TranslatorLoader"
       },
       "widgets_values": [
-        "utrobinmv/t5_translate_en_ru_zh_small_1024",
+        "iic/nlp_csanmt_translation_zh2en",
         "auto",
         true
       ]
     },
     {
-      "id": 21,
+      "id": 33,
       "type": "ShowText|pysssss",
       "pos": [
-        1000,
-        200
+        110,
+        1120
       ],
       "size": [
-        360,
-        160
+        300,
+        90
       ],
       "flags": {},
       "order": 9,
-      "mode": 4,
+      "mode": 0,
       "inputs": [
         {
           "name": "text",
           "type": "STRING",
-          "link": 33,
+          "link": 51,
           "widget": {
             "name": "text"
           }
@@ -496,8 +757,11 @@
         {
           "name": "STRING",
           "type": "STRING",
-          "links": null,
-          "shape": 6
+          "links": [
+            52
+          ],
+          "shape": 6,
+          "slot_index": 0
         }
       ],
       "properties": {
@@ -505,70 +769,8 @@
       },
       "widgets_values": [
         "",
-        "close-up of hakurei reimu sitting in a room, with text: * and * on the wall.\n"
+        "A children's crayon drawing with a lovely mushroom-shaped house in the forest with the titles * and *.\n"
       ]
-    },
-    {
-      "id": 22,
-      "type": "Reroute",
-      "pos": [
-        660,
-        980
-      ],
-      "size": [
-        75,
-        26
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "",
-          "type": "*",
-          "link": 34,
-          "widget": {
-            "name": "value"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "STRING",
-          "links": [
-            35
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "showOutputText": false,
-        "horizontal": false
-      }
-    },
-    {
-      "id": 24,
-      "type": "Note",
-      "pos": [
-        520,
-        910
-      ],
-      "size": [
-        390,
-        60
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "properties": {},
-      "widgets_values": [
-        "Custom translator if want non-English prompt."
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
     }
   ],
   "links": [
@@ -661,59 +863,187 @@
       "IMAGE"
     ],
     [
-      32,
-      20,
+      37,
+      11,
       0,
-      19,
+      26,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      38,
+      11,
+      1,
+      29,
+      1,
+      "VAE"
+    ],
+    [
+      39,
+      11,
+      0,
+      28,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      40,
+      28,
+      0,
+      29,
+      0,
+      "LATENT"
+    ],
+    [
+      41,
+      29,
+      0,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      43,
+      25,
+      1,
+      26,
+      2,
+      "LIST"
+    ],
+    [
+      44,
+      12,
+      0,
+      26,
+      4,
+      "IMAGE"
+    ],
+    [
+      45,
+      12,
+      1,
+      26,
+      1,
+      "MASK"
+    ],
+    [
+      47,
+      26,
+      0,
+      28,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      48,
+      26,
+      1,
+      28,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      49,
+      32,
+      0,
+      31,
       0,
       "TRANSLATE_MODEL"
     ],
     [
-      33,
-      19,
+      50,
+      25,
       0,
-      21,
+      31,
+      1,
+      "STRING"
+    ],
+    [
+      51,
+      31,
+      0,
+      33,
       0,
       "STRING"
     ],
     [
-      34,
-      10,
+      52,
+      33,
       0,
-      22,
-      0,
-      "*"
+      26,
+      5,
+      "STRING"
     ],
     [
-      35,
-      22,
+      53,
+      10,
       0,
       13,
       5,
       "STRING"
     ],
     [
-      36,
-      10,
+      54,
+      14,
       0,
-      19,
-      1,
-      "STRING"
+      26,
+      3,
+      "LATENT"
     ]
   ],
-  "groups": [],
+  "groups": [
+    {
+      "id": 3,
+      "title": "Original NLP Translator",
+      "bounding": [
+        -240,
+        1039.199951171875,
+        1490,
+        670.7999877929688
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "Without translaotor",
+      "bounding": [
+        -220,
+        359.20001220703125,
+        1130,
+        670.7999877929688
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "Common",
+      "bounding": [
+        -660,
+        630,
+        335,
+        876.7999877929688
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
+    }
+  ],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.5497558138880017,
+      "scale": 0.5497558138880019,
       "offset": [
-        497.40111807779,
-        0.2761224337378523
+        922.3005522482434,
+        -584.9642431355461
       ]
     },
     "node_versions": {
       "comfy-core": "0.3.14",
-      "ComfyUI_Anytext": "bbcbd184bb5b0017f79038d3baa9f13786121b41",
+      "ComfyUI_Anytext": "61064ce9a9b352f6e8614caa2de122e6567bf228",
       "ComfyUI-Custom-Scripts": "a53ef9b617ed1331640d7a2cd97644995908dc00\n"
     },
     "VHS_latentpreview": false,

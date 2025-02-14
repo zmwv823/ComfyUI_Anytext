@@ -2,7 +2,14 @@
 
 # 1、AnyText: Unofficial custom_node for [AnyText: Multilingual Visual Text Generation And Editing](https://github.com/tyxsspa/AnyText)
 
-## Option 1: full AnyText checkpoint.
+## Option 1: any sd1.5 checkpoint with AnyText control model.
+### Huggingface:
+- https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
+- https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
+### Workflow in example_workflows dir:
+![](./example_workflows/T2I-AnyText.png)
+
+## Option 2: full AnyText checkpoint.
 ### Huggingface:
 - fp16: https://huggingface.co/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors
 - fp16: https://hf-mirror.com/Sanster/AnyText/blob/main/pytorch_model.fp16.safetensors (China mainland users)
@@ -12,14 +19,6 @@
 - https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/resolve/master/anytext_v1.1.ckpt
 ### Workflow in example_workflows dir:
 ![](./example_workflows/Img_Gen-AnyText-full-wf.png)
-
-## Option 2: any sd1.5 checkpoint with AnyText control model.
-### Huggingface:
-- https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
-- https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
-### Workflow in example_workflows dir:
-![](./example_workflows/T2I-AnyText.png)
-![](./example_workflows/T2I-AnyText-Translator.png)
 
 ### ~~If want chinese prompt without translator, use MiaoBi clip.~~(Not recommended, will be removed in future.)
 ### ~~Huggingface:~~

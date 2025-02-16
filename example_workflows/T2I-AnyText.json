@@ -1,20 +1,20 @@
 {
-  "last_node_id": 33,
-  "last_link_id": 54,
+  "last_node_id": 38,
+  "last_link_id": 66,
   "nodes": [
     {
       "id": 10,
       "type": "UL_AnyTextFormatter",
       "pos": [
-        -200,
-        440
+        -210,
+        70
       ],
       "size": [
         320,
         120
       ],
       "flags": {},
-      "order": 2,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -54,7 +54,7 @@
         170
       ],
       "flags": {},
-      "order": 1,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -65,7 +65,9 @@
             15,
             21,
             37,
-            39
+            39,
+            61,
+            65
           ],
           "slot_index": 0
         },
@@ -74,7 +76,8 @@
           "type": "VAE",
           "links": [
             25,
-            38
+            38,
+            66
           ],
           "slot_index": 1
         },
@@ -106,7 +109,7 @@
         420
       ],
       "flags": {},
-      "order": 0,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -115,7 +118,8 @@
           "type": "IMAGE",
           "links": [
             27,
-            44
+            44,
+            63
           ],
           "slot_index": 0
         },
@@ -124,7 +128,8 @@
           "type": "MASK",
           "links": [
             16,
-            45
+            45,
+            62
           ],
           "slot_index": 1
         }
@@ -141,15 +146,15 @@
       "id": 13,
       "type": "UL_AnyTextEncoder",
       "pos": [
-        -210,
-        610
+        -220,
+        240
       ],
       "size": [
         340,
         400
       ],
       "flags": {},
-      "order": 6,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -175,16 +180,16 @@
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 27,
-          "shape": 7
+          "shape": 7,
+          "link": 27
         },
         {
           "name": "prompt",
           "type": "STRING",
-          "link": 53,
           "widget": {
             "name": "prompt"
-          }
+          },
+          "link": 53
         }
       ],
       "outputs": [
@@ -211,6 +216,26 @@
         {
           "name": "masked_x",
           "type": "LATENT",
+          "links": null
+        },
+        {
+          "name": "font_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "gly_line",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "glyphs",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_img",
+          "type": "IMAGE",
           "links": null
         }
       ],
@@ -240,7 +265,7 @@
         106
       ],
       "flags": {},
-      "order": 3,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -249,7 +274,8 @@
           "type": "LATENT",
           "links": [
             20,
-            54
+            54,
+            64
           ],
           "slot_index": 0
         }
@@ -267,15 +293,15 @@
       "id": 15,
       "type": "UL_AnyText_Sampler",
       "pos": [
-        140,
-        440
+        130,
+        70
       ],
       "size": [
         320,
         580
       ],
       "flags": {},
-      "order": 8,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -322,15 +348,15 @@
       "id": 16,
       "type": "VAEDecode",
       "pos": [
-        490,
-        430
+        480,
+        60
       ],
       "size": [
         210,
         46
       ],
       "flags": {},
-      "order": 10,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -363,15 +389,15 @@
       "id": 17,
       "type": "PreviewImage",
       "pos": [
-        470,
-        550
+        460,
+        180
       ],
       "size": [
         430,
         450
       ],
       "flags": {},
-      "order": 12,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -390,15 +416,15 @@
       "id": 25,
       "type": "UL_AnyTextFormatter",
       "pos": [
-        -230,
-        1110
+        -260,
+        1490
       ],
       "size": [
         320,
         160
       ],
       "flags": {},
-      "order": 5,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -430,15 +456,15 @@
       "id": 26,
       "type": "UL_AnyTextEncoder",
       "pos": [
-        110,
-        1270
+        80,
+        1650
       ],
       "size": [
         340,
         410
       ],
       "flags": {},
-      "order": 11,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -464,16 +490,16 @@
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 44,
-          "shape": 7
+          "shape": 7,
+          "link": 44
         },
         {
           "name": "prompt",
           "type": "STRING",
-          "link": 52,
           "widget": {
             "name": "prompt"
-          }
+          },
+          "link": 52
         }
       ],
       "outputs": [
@@ -502,6 +528,26 @@
           "name": "masked_x",
           "type": "LATENT",
           "links": null
+        },
+        {
+          "name": "font_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "gly_line",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "glyphs",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_img",
+          "type": "IMAGE",
+          "links": null
         }
       ],
       "properties": {
@@ -522,15 +568,15 @@
       "id": 28,
       "type": "UL_AnyText_Sampler",
       "pos": [
-        470,
-        1110
+        440,
+        1490
       ],
       "size": [
         320,
         580
       ],
       "flags": {},
-      "order": 13,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -577,15 +623,15 @@
       "id": 29,
       "type": "VAEDecode",
       "pos": [
-        800,
-        1120
+        770,
+        1500
       ],
       "size": [
         210,
         46
       ],
       "flags": {},
-      "order": 14,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -611,21 +657,22 @@
       ],
       "properties": {
         "Node name for S&R": "VAEDecode"
-      }
+      },
+      "widgets_values": []
     },
     {
       "id": 30,
       "type": "PreviewImage",
       "pos": [
-        810,
-        1230
+        780,
+        1610
       ],
       "size": [
         430,
         450
       ],
       "flags": {},
-      "order": 15,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -637,14 +684,15 @@
       "outputs": [],
       "properties": {
         "Node name for S&R": "PreviewImage"
-      }
+      },
+      "widgets_values": []
     },
     {
       "id": 31,
       "type": "UL_Translator",
       "pos": [
-        -210,
-        1490
+        -240,
+        1870
       ],
       "size": [
         290,
@@ -662,10 +710,10 @@
         {
           "name": "string",
           "type": "STRING",
-          "link": 50,
           "widget": {
             "name": "string"
-          }
+          },
+          "link": 50
         }
       ],
       "outputs": [
@@ -695,15 +743,15 @@
       "id": 32,
       "type": "UL_TranslatorLoader",
       "pos": [
-        -230,
-        1310
+        -260,
+        1690
       ],
       "size": [
         315,
         126
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -733,34 +781,34 @@
       "id": 33,
       "type": "ShowText|pysssss",
       "pos": [
-        110,
-        1120
+        80,
+        1500
       ],
       "size": [
         300,
         90
       ],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "text",
           "type": "STRING",
-          "link": 51,
           "widget": {
             "name": "text"
-          }
+          },
+          "link": 51
         }
       ],
       "outputs": [
         {
           "name": "STRING",
           "type": "STRING",
+          "shape": 6,
           "links": [
             52
           ],
-          "shape": 6,
           "slot_index": 0
         }
       ],
@@ -771,6 +819,278 @@
         "",
         "A children's crayon drawing with a lovely mushroom-shaped house in the forest with the titles * and *.\n"
       ]
+    },
+    {
+      "id": 34,
+      "type": "UL_AnyTextFormatter",
+      "pos": [
+        -220,
+        780
+      ],
+      "size": [
+        320,
+        120
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            56
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "links": [
+            55
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextFormatter"
+      },
+      "widgets_values": [
+        "\"Emmm\"  \"博丽灵梦\""
+      ]
+    },
+    {
+      "id": 35,
+      "type": "UL_AnyTextEncoder",
+      "pos": [
+        -230,
+        950
+      ],
+      "size": [
+        340,
+        400
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 61
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 62
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "link": 55
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "link": 64
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": 63
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 56
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            57
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            58
+          ]
+        },
+        {
+          "name": "mask_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_x",
+          "type": "LATENT",
+          "links": null
+        },
+        {
+          "name": "font_img",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "gly_line",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "glyphs",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "masked_img",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyTextEncoder"
+      },
+      "widgets_values": [
+        "",
+        "日系筑紫a丸GBK版.ttf",
+        false,
+        true,
+        "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
+        "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
+        false,
+        false
+      ]
+    },
+    {
+      "id": 36,
+      "type": "UL_AnyText_Sampler",
+      "pos": [
+        120,
+        780
+      ],
+      "size": [
+        320,
+        580
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 65
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 57
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 58
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            59
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UL_AnyText_Sampler"
+      },
+      "widgets_values": [
+        1093844436860054,
+        "fixed",
+        20,
+        5,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 37,
+      "type": "VAEDecode",
+      "pos": [
+        470,
+        770
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 59
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 66
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            60
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 38,
+      "type": "PreviewImage",
+      "pos": [
+        450,
+        890
+      ],
+      "size": [
+        430,
+        450
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 60
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
     }
   ],
   "links": [
@@ -989,6 +1309,102 @@
       26,
       3,
       "LATENT"
+    ],
+    [
+      55,
+      34,
+      1,
+      35,
+      2,
+      "LIST"
+    ],
+    [
+      56,
+      34,
+      0,
+      35,
+      5,
+      "STRING"
+    ],
+    [
+      57,
+      35,
+      0,
+      36,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      58,
+      35,
+      1,
+      36,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      59,
+      36,
+      0,
+      37,
+      0,
+      "LATENT"
+    ],
+    [
+      60,
+      37,
+      0,
+      38,
+      0,
+      "IMAGE"
+    ],
+    [
+      61,
+      11,
+      0,
+      35,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      62,
+      12,
+      1,
+      35,
+      1,
+      "MASK"
+    ],
+    [
+      63,
+      12,
+      0,
+      35,
+      4,
+      "IMAGE"
+    ],
+    [
+      64,
+      14,
+      0,
+      35,
+      3,
+      "LATENT"
+    ],
+    [
+      65,
+      11,
+      0,
+      36,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      66,
+      11,
+      1,
+      37,
+      1,
+      "VAE"
     ]
   ],
   "groups": [
@@ -996,8 +1412,8 @@
       "id": 3,
       "title": "Original NLP Translator",
       "bounding": [
-        -240,
-        1039.199951171875,
+        -270,
+        1420,
         1490,
         670.7999877929688
       ],
@@ -1009,8 +1425,8 @@
       "id": 4,
       "title": "Without translaotor",
       "bounding": [
-        -220,
-        359.20001220703125,
+        -230,
+        -10,
         1130,
         670.7999877929688
       ],
@@ -1030,20 +1446,33 @@
       "color": "#3f789e",
       "font_size": 22,
       "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "Text edit",
+      "bounding": [
+        -240,
+        700,
+        1129.9998779296875,
+        670.7999267578125
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
     }
   ],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.5497558138880019,
+      "scale": 0.28147497671065697,
       "offset": [
-        922.3005522482434,
-        -584.9642431355461
+        1720.3823354058982,
+        5.245155307516045
       ]
     },
     "node_versions": {
+      "ComfyUI_Wrappers": "ac4b6ff543cc4976960545dea78b7d4c4aed848d",
       "comfy-core": "0.3.14",
-      "ComfyUI_Anytext": "61064ce9a9b352f6e8614caa2de122e6567bf228",
       "ComfyUI-Custom-Scripts": "a53ef9b617ed1331640d7a2cd97644995908dc00\n"
     },
     "VHS_latentpreview": false,

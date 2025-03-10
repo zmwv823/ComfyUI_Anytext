@@ -19,7 +19,7 @@ from .... import comfy_temp_dir
 import shutil
 anytext_tmp_dir = os.path.join(comfy_temp_dir, "AnyText")
 if os.path.exists(anytext_tmp_dir):
-    shutil.rmtree()
+    shutil.rmtree(anytext_tmp_dir)
 os.makedirs(anytext_tmp_dir, exist_ok=True)
 SHOW_GLYPH = False
 

@@ -15,6 +15,7 @@ def encode(
 ):
     max_chars = 50
     batch_size, height, width = latent["samples"].shape[0], latent["samples"].shape[2] * 8, latent["samples"].shape[3] * 8 # B, C, H, W
+    
     sort_radio = '↔' if sort_radio else '↕'
     
     img_count = batch_size

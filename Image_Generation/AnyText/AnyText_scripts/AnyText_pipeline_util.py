@@ -32,12 +32,13 @@ def resize_image(img, max_length=768):
     height, width = img.shape[:2]
     max_dimension = max(height, width)
 
-    if max_dimension > max_length:
-        scale_factor = max_length / max_dimension
-        new_width = int(round(width * scale_factor))
-        new_height = int(round(height * scale_factor))
-        new_size = (new_width, new_height)
-        img = cv2.resize(img, new_size)
+    # if max_dimension > max_length:
+    scale_factor = max_length / max_dimension
+    new_width = int(round(width * scale_factor))
+    new_height = int(round(height * scale_factor))
+    new_size = (new_width, new_height)
+    img = cv2.resize(img, new_size)
+        
     height, width = img.shape[:2]
     img = cv2.resize(img, (width-(width % 64), height-(height % 64)))
     return img

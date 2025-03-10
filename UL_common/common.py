@@ -618,7 +618,7 @@ class CustomModelPatcher(ModelPatcher):
         """
         if keep_load and keep_device and should_offload and self.device.type != "cpu" and not args.gpu_only and self.quantization != "8-bit":
             # logger.info(f"Offload model: {self.model_type} to cpu (ram) on {self.load_device.type} device.")
-            logger.info(f"Offload model: {self.model_type} to cpu (ram) on {self.load_device.type} device.")
+            # logger.info(f"Offload model: {self.model_type} to cpu (ram) on {self.load_device.type} device.")
             torch.nn.ModuleList(self.sub_models + [self.model]).to(self.offload_device)
             mm.soft_empty_cache(True)
             clean_up()
@@ -628,20 +628,20 @@ class CustomModelPatcher(ModelPatcher):
                 del i
             self.model = self.unet = self.unet_encoder = self.vae = self.clip = self.tokenizer = self.clip_vision = self.clip_processor = self.image_processor = self.feature_extractor = self.processor = self.embedding = self.control_net = self.ip_adapter = self.visual_tokenizer = self.model_clone = self.clip_clone = None
             self.sub_models = self.sub_models_noSD = self.sub_patchers = []
-            logger.info(f"Try unload model: {self.model_type} to release resources on {self.load_device.type} device.")
+            # logger.info(f"Try unload model: {self.model_type} to release resources on {self.load_device.type} device.")
             mm.soft_empty_cache(True)
             clean_up()
             
     def load_all_gpu(self, force_cpu: bool=False, to_load: bool=True, force_load: bool=False):
         if should_offload and self.quantization != "8-bit":
             if (not force_cpu and self.device.type == "cpu") or force_load:
-                logger.info(f'Load model: {self.model_type} to gpu.')
+                # logger.info(f'Load model: {self.model_type} to gpu.')
                 mm.load_models_gpu([self] + self.sub_patchers, force_full_load=True)
                 if self.quantization != "8-bit" and to_load:
                     torch.nn.ModuleList(self.sub_models + [self.model]).to(self.load_device)
                 self.device = self.load_device
             elif force_cpu and self.device.type != "cpu":
-                logger.info(f'Offload model: {self.model_type} to cpu with force_cpu checked.')
+                # logger.info(f'Offload model: {self.model_type} to cpu with force_cpu checked.')
                 torch.nn.ModuleList(self.sub_models + [self.model]).to(self.offload_device)
                 mm.soft_empty_cache(True)
                 clean_up()
@@ -667,12 +667,12 @@ class CustomModelPatcher(ModelPatcher):
         offload_device = offload_device if offload_device != self.offload_device else self.offload_device
         if should_offload:
             if (not force_cpu and self.device.type == "cpu") or force_load:
-                logger.info(f'Load mdoels to gpu.')
+                # logger.info(f'Load mdoels to gpu.')
                 torch.nn.ModuleList(models).to(load_device)
                 if len(patchers) != 0:
                     mm.load_models_gpu(patchers)
             elif force_cpu and self.device.type != "cpu":
-                logger.info("Offload model: load_device=='cuda' to cpu (ram) with force_cpu checked.")
+                # logger.info("Offload model: load_device=='cuda' to cpu (ram) with force_cpu checked.")
                 torch.nn.ModuleList(models).to(offload_device)
                 mm.soft_empty_cache(True)
                 clean_up()
@@ -687,7 +687,7 @@ class CustomModelPatcher(ModelPatcher):
         offload_device = offload_device if offload_device != self.offload_device else self.offload_device
         if should_offload:
             if (not args.gpu_only and self.device.type != "cpu") or force_offload:
-                logger.info(f"Offload models to cpu (ram) on device with cuda (vram), do_clean: {do_clean}.")
+                # logger.info(f"Offload models to cpu (ram) on device with cuda (vram), do_clean: {do_clean}.")
                 torch.nn.ModuleList(models).to(offload_device)
                 if do_clean:
                     mm.soft_empty_cache(True)

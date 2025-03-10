@@ -14,8 +14,8 @@
 - https://huggingface.co/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors
 - https://hf-mirror.com/zmwv823/AnyText_control_model/blob/main/control_sd15_anytext_v1_1.safetensors (China mainland users)
 #### v2.0
-- https://huggingface.co/zmwv823/AnyText2/blob/main/control_sd15_anytext_v2_0.safetensors
-- https://hf-mirror.com/zmwv823/AnyText2/blob/main/control_sd15_anytext_v2_0.safetensors (China mainland users)
+- https://huggingface.co/zmwv823/AnyText2_control_model/blob/main/control_sd15_anytext_v2.0.safetensors
+- https://hf-mirror.com/zmwv823/AnyText2_control_model/blob/main/control_sd15_anytext_v2.0.safetensors (China mainland users)
 ### Workflow in example_workflows dir:
 ![](./example_workflows/T2I-AnyText.png)
 

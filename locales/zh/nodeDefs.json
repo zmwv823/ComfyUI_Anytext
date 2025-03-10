@@ -1,0 +1,272 @@
+{
+    "UL_AnyTextLoader": {
+        "description": "加载AnyText模型。",
+        "display_name": "AnyText模型加载器",
+        "inputs": {
+            "ckpt_name": {
+                "name": "模型名称"
+            },
+            "control_net_name": {
+                "name": "控制网模型名字",
+                "tooltip": "AnyText v1.1或者 v2.0"
+            },
+            "miaobi_clip": {
+                "name": "妙笔文本编码器"
+            },
+            "weight_dtype": {
+                "name": "数据类型"
+            },
+            "init_device": {
+                "name": "初始加载模型设备"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "AnyText模型"
+            },
+            "2": {
+                "name": "路径",
+                "tooltip": "模型路径。"
+            }
+        }
+    },
+    "UL_AnyTextSampler": {
+        "description": "AnyText模型采样。",
+        "display_name": "AnyText采样",
+        "inputs": {
+            "model": {
+                "name": "AnyText模型"
+            },
+            "positive": {
+                "name": "正面条件"
+            },
+            "negative": {
+                "name": "负面条件"
+            },
+            "steps": {
+                "name": "步数"
+            },
+            "strength": {
+                "name": "控制网强度"
+            },
+            "attnx_scale": {
+                "name": "注意力强度"
+            },
+            "keep_load": {
+                "name": "模型保活",
+                "tooltip": "注意：仅在这个节点不再需要时卸载模型，将尽量尝试释放模型占用的系统内存和设备专用内存。如果卸载后想继续使用此节点，使用ComfyUI-Manager插件的`Free model and node cache`重置节点状态或者更改模型加载节点的参数或者替换加载节点(建议)来激活。"
+            },
+            "keep_device": {
+                "name": "保活设备",
+                "tooltip": "生图完成后，在支持的设备上，模型移动到comfy自动选择设备(HIGH_VRAM: device, 其他: cpu)或者保留在设备专用内存上。"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "latent",
+                "tooltip": "图像潜空间。"
+            }
+        }
+    },
+    "UL_AnyTextEncoder": {
+        "description": "AnyText编码。",
+        "display_name": "AnyText编码",
+        "inputs": {
+            "model": {
+                "name": "AnyText模型"
+            },
+            "mask": {
+                "name": "遮罩"
+            },
+            "prompt": {
+                "name": "提示词"
+            },
+            "texts": {
+                "name": "文本"
+            },
+            "font_name": {
+                "name": "字体名字"
+            },
+            "mode": {
+                "name": "模式"
+            },
+            "sort_radio": {
+                "name": "文字位置排序"
+            },
+            "random_mask": {
+                "name": "随机自动遮罩",
+                "tooltip": "启用后自动生成遮罩。"
+            },
+            "revise_pos": {
+                "name": "文字位置调整",
+                "tooltip": "使用边界盒子渲染文字作位置调整。但是发现偶尔会影响生成质量，仅在使用随机生成遮罩时生效。"
+            },
+            "image": {
+                "name": "图像"
+            },
+            "fonts": {
+                "name": "AnyText2字体"
+            },
+            "font_apply": {
+                "name": "应用方法"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "正面条件",
+                "tooltip": "不适用于ComfyUI原生节点。"
+            },
+            "1": {
+                "name": "负面条件",
+                "tooltip": "不适用于ComfyUI原生节点。"
+            },
+            "2": {
+                "name": "图像"
+            },
+            "3": {
+                "name": "图像"
+            }
+        }
+    },
+    "UL_AnyTextFormatter": {
+        "description": "AnyText提示词格式化。",
+        "display_name": "AnyText提示词格式化",
+        "inputs": {
+            "prompt": {
+                "name": "提示词"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "提示词"
+            },
+            "1": {
+                "name": "文本"
+            }
+        }
+    },
+    "UL_AnyText2Fonts": {
+        "description": "AnyText2字体。",
+        "display_name": "AnyText2字体",
+        "inputs": {
+            "font_hollow": {
+                "name": "使用空心字体"
+            },
+            "font_name": {
+                "name": "字体名字"
+            },
+            "font_color": {
+                "name": "字体颜色"
+            },
+            "font_name1": {
+                "name": "字体名字1"
+            },
+            "font_color1": {
+                "name": "字体颜色1"
+            },
+            "font_name2": {
+                "name": "字体名字2"
+            },
+            "font_color2": {
+                "name": "字体颜色2"
+            },
+            "font_name3": {
+                "name": "字体名字3"
+            },
+            "font_color3": {
+                "name": "字体颜色3"
+            },
+            "font_name4": {
+                "name": "字体名字4"
+            },
+            "font_color4": {
+                "name": "字体颜色4"
+            },
+            "font_name5": {
+                "name": "字体名字5"
+            },
+            "font_color5": {
+                "name": "字体颜色5"
+            },
+            "font_name6": {
+                "name": "字体名字6"
+            },
+            "font_color6": {
+                "name": "字体颜色6"
+            },
+            "font_name7": {
+                "name": "字体名字7"
+            },
+            "font_color7": {
+                "name": "字体颜色7"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "AnyText2字体"
+            }
+        }
+    },
+    "U_LoRAS": {
+        "description": "融合LoRAs。",
+        "display_name": "LoRAs",
+        "inputs": {
+            "model": {
+                "name": "AnyText模型"
+            },
+            "lora_name": {
+                "name": "LoRA名字"
+            },
+            "weight": {
+                "name": "LoRA权重"
+            },
+            "switch": {
+                "name": "LoRA开关"
+            },
+            "lora_name1": {
+                "name": "LoRA名字1"
+            },
+            "weight1": {
+                "name": "LoRA权重1"
+            },
+            "switch1": {
+                "name": "LoRA开关1"
+            },
+            "lora_name2": {
+                "name": "LoRA名字2"
+            },
+            "weight2": {
+                "name": "LoRA权重2"
+            },
+            "switch2": {
+                "name": "LoRA开关2"
+            },
+            "lora_name3": {
+                "name": "LoRA名字3"
+            },
+            "weight3": {
+                "name": "LoRA权重3"
+            },
+            "switch3": {
+                "name": "LoRA开关3"
+            },
+            "lora_name4": {
+                "name": "LoRA名字4"
+            },
+            "weight4": {
+                "name": "LoRA权重4"
+            },
+            "switch4": {
+                "name": "LoRA开关4"
+            }
+        },
+        "outputs": {
+            "0": {
+                "name": "AnyText模型"
+            },
+            "1": {
+                "name": "LoRA路径"
+            }
+        }
+    }
+}

@@ -604,8 +604,8 @@ class UL_AnyText2Fonts:
             }
         }
 
-    RETURN_TYPES = ("ANYTEXT_FONTS", "DICT", )
-    RETURN_NAMES = ("fonts", "kwargs", )
+    RETURN_TYPES = ("ANYTEXT_FONTS", )
+    RETURN_NAMES = ("fonts", )
     FUNCTION = "main"
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText2 Fonts"
@@ -668,14 +668,14 @@ class UL_AnyText2Fonts:
         }
         kwargs = Kwargs(kwargs_ori)
         
-        return (kwargs, kwargs_ori, )
+        return (kwargs, )
 
 # Node class and display name mappings
 NODE_CLASS_MAPPINGS = {
-    "UL_AnyText_Sampler": UL_AnyTextSampler,
-    "UL_AnyText_Loader": UL_AnyTextLoader,
-    "UL_AnyText_FontImg": UL_AnyTextFontImg,
-    "UL_AnyText_Composer": UL_AnyTextComposer,
+    "UL_AnyTextSampler": UL_AnyTextSampler,
+    "UL_AnyTextLoader": UL_AnyTextLoader,
+    "UL_AnyTextFontImg": UL_AnyTextFontImg,
+    "UL_AnyTextComposer": UL_AnyTextComposer,
     "UL_AnyTextEncoder": UL_AnyTextEncoder,
     "UL_AnyTextFormatter": UL_AnyTextFormatter,
     "UL_AnyText2Fonts": UL_AnyText2Fonts

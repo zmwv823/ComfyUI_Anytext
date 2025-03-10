@@ -1,63 +1,7 @@
 {
-  "last_node_id": 121,
-  "last_link_id": 3359,
+  "last_node_id": 133,
+  "last_link_id": 3395,
   "nodes": [
-    {
-      "id": 11,
-      "type": "UL_AnyText_Loader",
-      "pos": [
-        -1350,
-        700
-      ],
-      "size": [
-        340,
-        220
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "showAdvanced": true,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "AnyText_Model",
-          "links": [
-            3257
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "links": [
-            3200,
-            3266,
-            3279
-          ],
-          "slot_index": 1
-        },
-        {
-          "name": "ckpt_name",
-          "type": "STRING",
-          "links": [],
-          "slot_index": 2
-        }
-      ],
-      "properties": {
-        "cnr_id": "anytext",
-        "ver": "53403db39dafafc90f0cdaaef4205a70e911136b",
-        "Node name for S&R": "UL_AnyText_Loader",
-        "aux_id": "zmwv823/ComfyUI_Wrappers"
-      },
-      "widgets_values": [
-        "15\\真实系_自用真人模型v1d0采rt跳2采dppsk跳1&2步25+.safetensors",
-        "control_sd15_anytext_v2.0.safetensors",
-        "None",
-        "auto",
-        "auto"
-      ]
-    },
     {
       "id": 14,
       "type": "EmptyLatentImage",
@@ -70,7 +14,7 @@
         106
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -80,7 +24,7 @@
           "links": [
             3330,
             3341,
-            3350
+            3388
           ],
           "slot_index": 0
         }
@@ -114,12 +58,12 @@
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 3213
+          "link": 3376
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 3200
+          "link": 3382
         }
       ],
       "outputs": [
@@ -169,64 +113,6 @@
       "widgets_values": []
     },
     {
-      "id": 42,
-      "type": "UL_AnyText_Sampler",
-      "pos": [
-        220,
-        90
-      ],
-      "size": [
-        320,
-        700
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "AnyText_Model",
-          "link": 3259
-        },
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 3354
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 3355
-        }
-      ],
-      "outputs": [
-        {
-          "name": "latent",
-          "type": "LATENT",
-          "links": [
-            3213
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "anytext",
-        "ver": "53403db39dafafc90f0cdaaef4205a70e911136b",
-        "Node name for S&R": "UL_AnyText_Sampler",
-        "aux_id": "zmwv823/ComfyUI_Wrappers"
-      },
-      "widgets_values": [
-        88888888,
-        "fixed",
-        20,
-        9,
-        1,
-        1,
-        0,
-        true,
-        true
-      ]
-    },
-    {
       "id": 47,
       "type": "UL_AnyText2Fonts",
       "pos": [
@@ -238,7 +124,7 @@
         462
       ],
       "flags": {},
-      "order": 9,
+      "order": 7,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -248,7 +134,7 @@
           "links": [
             3332,
             3343,
-            3352
+            3390
           ]
         },
         {
@@ -267,7 +153,7 @@
       "widgets_values": [
         false,
         "日系筑紫a丸GBK版.ttf",
-        "yellow",
+        "red",
         "AlibabaPuHuiTi-2-65-Medium.ttf",
         "wheat",
         "日系筑紫a丸GBK版.ttf",
@@ -296,7 +182,7 @@
         314
       ],
       "flags": {},
-      "order": 2,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -305,7 +191,7 @@
           "type": "IMAGE",
           "links": [
             3342,
-            3351
+            3389
           ]
         },
         {
@@ -313,7 +199,7 @@
           "type": "MASK",
           "links": [
             3339,
-            3348
+            3386
           ]
         }
       ],
@@ -323,7 +209,7 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "clipspace/clipspace-mask-7343320.300000012.png [input]",
+        "clipspace/clipspace-mask-153647.png [input]",
         "image"
       ]
     },
@@ -339,13 +225,13 @@
         414
       ],
       "flags": {},
-      "order": 10,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "AnyText_Model",
-          "link": 3257
+          "link": 3381
         }
       ],
       "outputs": [
@@ -353,12 +239,12 @@
           "name": "model",
           "type": "AnyText_Model",
           "links": [
-            3259,
-            3268,
-            3281,
             3327,
             3338,
-            3347
+            3369,
+            3375,
+            3377,
+            3385
           ],
           "slot_index": 0
         },
@@ -376,10 +262,10 @@
       },
       "widgets_values": [
         "ys艺术\\sd15_mw_bpch_扁平风格插画v1d1.safetensors",
-        0.73,
+        1,
         false,
         "ys艺术\\sd15_浮雕风格v01触relief.safetensors",
-        0.62,
+        1,
         false,
         "3d\\sd15_棉花娃娃Q版v2触character doll或cottondoll或chibi.safetensors",
         1,
@@ -404,13 +290,13 @@
         370
       ],
       "flags": {},
-      "order": 6,
+      "order": 15,
       "mode": 4,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": null
+          "link": 3394
         }
       ],
       "outputs": [],
@@ -433,7 +319,7 @@
         200
       ],
       "flags": {},
-      "order": 3,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -441,14 +327,14 @@
           "name": "prompt",
           "type": "STRING",
           "links": [
-            3353
+            3391
           ]
         },
         {
           "name": "texts",
           "type": "LIST",
           "links": [
-            3349
+            3387
           ]
         }
       ],
@@ -480,12 +366,12 @@
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 3265
+          "link": 3372
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 3266
+          "link": 3383
         }
       ],
       "outputs": [
@@ -535,64 +421,6 @@
       "widgets_values": []
     },
     {
-      "id": 90,
-      "type": "UL_AnyText_Sampler",
-      "pos": [
-        230,
-        940
-      ],
-      "size": [
-        320,
-        700
-      ],
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "AnyText_Model",
-          "link": 3268
-        },
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 3345
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 3346
-        }
-      ],
-      "outputs": [
-        {
-          "name": "latent",
-          "type": "LATENT",
-          "links": [
-            3265
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "anytext",
-        "ver": "53403db39dafafc90f0cdaaef4205a70e911136b",
-        "Node name for S&R": "UL_AnyText_Sampler",
-        "aux_id": "zmwv823/ComfyUI_Wrappers"
-      },
-      "widgets_values": [
-        8888888,
-        "fixed",
-        20,
-        3,
-        1,
-        1,
-        0,
-        false,
-        true
-      ]
-    },
-    {
       "id": 91,
       "type": "UL_AnyTextFormatter",
       "pos": [
@@ -604,7 +432,7 @@
         200
       ],
       "flags": {},
-      "order": 4,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -651,12 +479,12 @@
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 3278
+          "link": 3378
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 3279
+          "link": 3384
         }
       ],
       "outputs": [
@@ -706,64 +534,6 @@
       "widgets_values": []
     },
     {
-      "id": 95,
-      "type": "UL_AnyText_Sampler",
-      "pos": [
-        230,
-        1790
-      ],
-      "size": [
-        320,
-        700
-      ],
-      "flags": {},
-      "order": 17,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "AnyText_Model",
-          "link": 3281
-        },
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 3334
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 3335
-        }
-      ],
-      "outputs": [
-        {
-          "name": "latent",
-          "type": "LATENT",
-          "links": [
-            3278
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "anytext",
-        "ver": "53403db39dafafc90f0cdaaef4205a70e911136b",
-        "Node name for S&R": "UL_AnyText_Sampler",
-        "aux_id": "zmwv823/ComfyUI_Wrappers"
-      },
-      "widgets_values": [
-        88888888,
-        "fixed",
-        20,
-        9,
-        1,
-        1,
-        0,
-        true,
-        true
-      ]
-    },
-    {
       "id": 96,
       "type": "UL_AnyTextFormatter",
       "pos": [
@@ -775,7 +545,7 @@
         200
       ],
       "flags": {},
-      "order": 7,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -817,7 +587,7 @@
         314
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -860,7 +630,7 @@
         510
       ],
       "flags": {},
-      "order": 14,
+      "order": 13,
       "mode": 0,
       "showAdvanced": false,
       "inputs": [
@@ -910,22 +680,22 @@
           "name": "positive",
           "type": "CONDITIONING",
           "links": [
-            3334
-          ]
+            3379
+          ],
+          "slot_index": 0
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
           "links": [
-            3335
-          ]
+            3380
+          ],
+          "slot_index": 1
         },
         {
           "name": "font_hint",
           "type": "IMAGE",
-          "links": [
-            3336
-          ],
+          "links": [],
           "slot_index": 2
         },
         {
@@ -957,35 +727,6 @@
       ]
     },
     {
-      "id": 116,
-      "type": "PreviewImage",
-      "pos": [
-        970,
-        2150
-      ],
-      "size": [
-        510,
-        430
-      ],
-      "flags": {},
-      "order": 18,
-      "mode": 4,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 3336
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.24",
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
       "id": 117,
       "type": "PreviewImage",
       "pos": [
@@ -993,8 +734,8 @@
         1770
       ],
       "size": [
-        520,
-        340
+        260,
+        720
       ],
       "flags": {},
       "order": 19,
@@ -1026,7 +767,7 @@
         490
       ],
       "flags": {},
-      "order": 12,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -1075,15 +816,16 @@
           "name": "positive",
           "type": "CONDITIONING",
           "links": [
-            3345
+            3370
           ]
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
           "links": [
-            3346
-          ]
+            3371
+          ],
+          "slot_index": 1
         },
         {
           "name": "font_hint",
@@ -1093,7 +835,10 @@
         {
           "name": "font",
           "type": "IMAGE",
-          "links": null
+          "links": [
+            3394
+          ],
+          "slot_index": 3
         }
       ],
       "properties": {
@@ -1106,107 +851,6 @@
         "",
         "AnyText-Arial-Unicode.ttf",
         false,
-        true,
-        "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
-        "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
-        false,
-        false,
-        true,
-        false
-      ]
-    },
-    {
-      "id": 119,
-      "type": "UL_AnyTextEncoder",
-      "pos": [
-        -210,
-        320
-      ],
-      "size": [
-        420,
-        490
-      ],
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "AnyText_Model",
-          "link": 3347
-        },
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 3348
-        },
-        {
-          "name": "texts",
-          "type": "LIST",
-          "link": 3349
-        },
-        {
-          "name": "latent",
-          "type": "LATENT",
-          "link": 3350
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "shape": 7,
-          "link": 3351
-        },
-        {
-          "name": "fonts",
-          "type": "ANYTEXT_FONTS",
-          "shape": 7,
-          "link": 3352
-        },
-        {
-          "name": "prompt",
-          "type": "STRING",
-          "widget": {
-            "name": "prompt"
-          },
-          "link": 3353
-        }
-      ],
-      "outputs": [
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "links": [
-            3354
-          ]
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "links": [
-            3355
-          ]
-        },
-        {
-          "name": "font_hint",
-          "type": "IMAGE",
-          "links": null
-        },
-        {
-          "name": "font",
-          "type": "IMAGE",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "anytext",
-        "ver": "53403db39dafafc90f0cdaaef4205a70e911136b",
-        "Node name for S&R": "UL_AnyTextEncoder",
-        "aux_id": "zmwv823/ComfyUI_Wrappers"
-      },
-      "widgets_values": [
-        "",
-        "AnyText-Arial-Unicode.ttf",
-        true,
         true,
         "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
         "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
@@ -1229,7 +873,7 @@
       ],
       "flags": {},
       "order": 8,
-      "mode": 4,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -1269,8 +913,8 @@
         232
       ],
       "flags": {},
-      "order": 11,
-      "mode": 4,
+      "order": 10,
+      "mode": 0,
       "inputs": [
         {
           "name": "model",
@@ -1310,6 +954,364 @@
         true,
         true
       ]
+    },
+    {
+      "id": 126,
+      "type": "UL_AnyTextSampler",
+      "pos": [
+        230,
+        930
+      ],
+      "size": [
+        330,
+        720
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 3369
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 3370
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 3371
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            3372
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "anytext",
+        "ver": "46c5b26db04a195ca2e910f45124d8584ec5151e",
+        "Node name for S&R": "UL_AnyTextSampler"
+      },
+      "widgets_values": [
+        707394087536005,
+        "fixed",
+        20,
+        3,
+        1,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 127,
+      "type": "UL_AnyTextSampler",
+      "pos": [
+        230,
+        80
+      ],
+      "size": [
+        320,
+        700
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 3375
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 3392
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 3393
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            3376
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "anytext",
+        "ver": "46c5b26db04a195ca2e910f45124d8584ec5151e",
+        "Node name for S&R": "UL_AnyTextSampler"
+      },
+      "widgets_values": [
+        124936537064524,
+        "fixed",
+        20,
+        9,
+        1,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 128,
+      "type": "UL_AnyTextSampler",
+      "pos": [
+        230,
+        1770
+      ],
+      "size": [
+        320,
+        730
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 3377
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 3379
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 3380
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            3378
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "cnr_id": "anytext",
+        "ver": "46c5b26db04a195ca2e910f45124d8584ec5151e",
+        "Node name for S&R": "UL_AnyTextSampler"
+      },
+      "widgets_values": [
+        92482876160610,
+        "fixed",
+        20,
+        9,
+        1,
+        1,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 129,
+      "type": "UL_AnyTextLoader",
+      "pos": [
+        -1350,
+        720
+      ],
+      "size": [
+        315,
+        194
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "showAdvanced": true,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "links": [
+            3381
+          ]
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": [
+            3382,
+            3383,
+            3384
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "ckpt_name",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "anytext",
+        "ver": "46c5b26db04a195ca2e910f45124d8584ec5151e",
+        "Node name for S&R": "UL_AnyTextLoader"
+      },
+      "widgets_values": [
+        "15\\Counterfeit-V3.0_fix_fp16.safetensors",
+        "control_sd15_anytext_v2.0.safetensors",
+        "None",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 130,
+      "type": "UL_AnyTextEncoder",
+      "pos": [
+        -210,
+        320
+      ],
+      "size": [
+        430,
+        500
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "AnyText_Model",
+          "link": 3385
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 3386
+        },
+        {
+          "name": "texts",
+          "type": "LIST",
+          "link": 3387
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "link": 3388
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": 3389
+        },
+        {
+          "name": "fonts",
+          "type": "ANYTEXT_FONTS",
+          "shape": 7,
+          "link": 3390
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 3391
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            3392
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            3393
+          ]
+        },
+        {
+          "name": "font_hint",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "font",
+          "type": "IMAGE",
+          "links": [
+            3395
+          ],
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "cnr_id": "anytext",
+        "ver": "46c5b26db04a195ca2e910f45124d8584ec5151e",
+        "Node name for S&R": "UL_AnyTextEncoder"
+      },
+      "widgets_values": [
+        "",
+        "AnyText-Arial-Unicode.ttf",
+        true,
+        true,
+        "best quality, extremely detailed,4k, HD, supper legible text,  clear text edges,  clear strokes, neat writing, no watermarks",
+        "low-res, bad anatomy, extra digit, fewer digits, cropped, worst quality, low quality, watermark, unreadable text, messy words, distorted text, disorganized writing, advertising picture",
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": 133,
+      "type": "PreviewImage",
+      "pos": [
+        970,
+        100
+      ],
+      "size": [
+        280,
+        680
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 3395
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.24",
+        "Node name for S&R": "PreviewImage"
+      }
     }
   ],
   "links": [
@@ -1322,92 +1324,12 @@
       "IMAGE"
     ],
     [
-      3200,
-      11,
-      1,
-      16,
-      1,
-      "VAE"
-    ],
-    [
-      3213,
-      42,
-      0,
-      16,
-      0,
-      "LATENT"
-    ],
-    [
-      3257,
-      11,
-      0,
-      84,
-      0,
-      "AnyText_Model"
-    ],
-    [
-      3259,
-      84,
-      0,
-      42,
-      0,
-      "AnyText_Model"
-    ],
-    [
-      3265,
-      90,
-      0,
-      88,
-      0,
-      "LATENT"
-    ],
-    [
-      3266,
-      11,
-      1,
-      88,
-      1,
-      "VAE"
-    ],
-    [
       3267,
       88,
       0,
       89,
       0,
       "IMAGE"
-    ],
-    [
-      3268,
-      84,
-      0,
-      90,
-      0,
-      "AnyText_Model"
-    ],
-    [
-      3278,
-      95,
-      0,
-      93,
-      0,
-      "LATENT"
-    ],
-    [
-      3279,
-      11,
-      1,
-      93,
-      1,
-      "VAE"
-    ],
-    [
-      3281,
-      84,
-      0,
-      95,
-      0,
-      "AnyText_Model"
     ],
     [
       3326,
@@ -1464,30 +1386,6 @@
       115,
       5,
       "ANYTEXT_FONTS"
-    ],
-    [
-      3334,
-      115,
-      0,
-      95,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      3335,
-      115,
-      1,
-      95,
-      2,
-      "CONDITIONING"
-    ],
-    [
-      3336,
-      115,
-      2,
-      116,
-      0,
-      "IMAGE"
     ],
     [
       3337,
@@ -1554,94 +1452,6 @@
       "STRING"
     ],
     [
-      3345,
-      118,
-      0,
-      90,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      3346,
-      118,
-      1,
-      90,
-      2,
-      "CONDITIONING"
-    ],
-    [
-      3347,
-      84,
-      0,
-      119,
-      0,
-      "AnyText_Model"
-    ],
-    [
-      3348,
-      54,
-      1,
-      119,
-      1,
-      "MASK"
-    ],
-    [
-      3349,
-      87,
-      1,
-      119,
-      2,
-      "LIST"
-    ],
-    [
-      3350,
-      14,
-      0,
-      119,
-      3,
-      "LATENT"
-    ],
-    [
-      3351,
-      54,
-      0,
-      119,
-      4,
-      "IMAGE"
-    ],
-    [
-      3352,
-      47,
-      0,
-      119,
-      5,
-      "ANYTEXT_FONTS"
-    ],
-    [
-      3353,
-      87,
-      0,
-      119,
-      6,
-      "STRING"
-    ],
-    [
-      3354,
-      119,
-      0,
-      42,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      3355,
-      119,
-      1,
-      42,
-      2,
-      "CONDITIONING"
-    ],
-    [
       3357,
       120,
       0,
@@ -1664,6 +1474,206 @@
       115,
       6,
       "STRING"
+    ],
+    [
+      3369,
+      84,
+      0,
+      126,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      3370,
+      118,
+      0,
+      126,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      3371,
+      118,
+      1,
+      126,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      3372,
+      126,
+      0,
+      88,
+      0,
+      "LATENT"
+    ],
+    [
+      3375,
+      84,
+      0,
+      127,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      3376,
+      127,
+      0,
+      16,
+      0,
+      "LATENT"
+    ],
+    [
+      3377,
+      84,
+      0,
+      128,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      3378,
+      128,
+      0,
+      93,
+      0,
+      "LATENT"
+    ],
+    [
+      3379,
+      115,
+      0,
+      128,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      3380,
+      115,
+      1,
+      128,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      3381,
+      129,
+      0,
+      84,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      3382,
+      129,
+      1,
+      16,
+      1,
+      "VAE"
+    ],
+    [
+      3383,
+      129,
+      1,
+      88,
+      1,
+      "VAE"
+    ],
+    [
+      3384,
+      129,
+      1,
+      93,
+      1,
+      "VAE"
+    ],
+    [
+      3385,
+      84,
+      0,
+      130,
+      0,
+      "AnyText_Model"
+    ],
+    [
+      3386,
+      54,
+      1,
+      130,
+      1,
+      "MASK"
+    ],
+    [
+      3387,
+      87,
+      1,
+      130,
+      2,
+      "LIST"
+    ],
+    [
+      3388,
+      14,
+      0,
+      130,
+      3,
+      "LATENT"
+    ],
+    [
+      3389,
+      54,
+      0,
+      130,
+      4,
+      "IMAGE"
+    ],
+    [
+      3390,
+      47,
+      0,
+      130,
+      5,
+      "ANYTEXT_FONTS"
+    ],
+    [
+      3391,
+      87,
+      0,
+      130,
+      6,
+      "STRING"
+    ],
+    [
+      3392,
+      130,
+      0,
+      127,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      3393,
+      130,
+      1,
+      127,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      3394,
+      118,
+      3,
+      86,
+      0,
+      "IMAGE"
+    ],
+    [
+      3395,
+      130,
+      3,
+      133,
+      0,
+      "IMAGE"
     ]
   ],
   "groups": [
@@ -1776,9 +1786,9 @@
       "title": "Font imgs",
       "bounding": [
         960,
-        1700,
-        540,
-        890.7999877929688
+        1699.199951171875,
+        280,
+        800.7999877929688
       ],
       "color": "#3f789e",
       "font_size": 22,
@@ -1788,10 +1798,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.40960000000000013,
+      "scale": 0.32768000000000014,
       "offset": [
-        1594.4775916109352,
-        -477.854946541765
+        2185.80750352277,
+        -600.2171918163378
       ]
     },
     "node_versions": {

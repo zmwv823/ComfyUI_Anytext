@@ -16,21 +16,21 @@ class U_LoRAS:
                 "weight": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
                 "switch": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
                 
-                "lora_name_1": (loras,),
-                "weight_1": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                "switch_1": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
+                "lora_name1": (loras,),
+                "weight1": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "switch1": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
                 
-                "lora_name_2": (loras,),
-                "weight_2": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                "switch_2": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
+                "lora_name2": (loras,),
+                "weight2": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "switch2": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
                 
-                "lora_name_3": (loras,),
-                "weight_3": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                "switch_3": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
+                "lora_name3": (loras,),
+                "weight3": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "switch3": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
                 
-                "lora_name_4": (loras,),
-                "weight_4": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                "switch_4": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
+                "lora_name4": (loras,),
+                "weight4": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "switch4": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
                 
                 # "lora_name_5": (loras,),
                 # "weight_5": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),

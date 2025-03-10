@@ -8,3 +8,6 @@ ujson
 omegaconf
 easydict
 open_clip_torch
+
+#AnyText2
+webcolors

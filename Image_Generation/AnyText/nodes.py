@@ -6,19 +6,21 @@ import numpy as np
 import torch
 from PIL import ImageFont, Image
 from comfy.utils import load_torch_file
-from .AnyText_scripts.AnyText_pipeline_util import resize_image
-from ...UL_common.common import pil2tensor, tensor2numpy_cv2, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, comfy_clean_vram
+from ...UL_common.common import pil2tensor, tensor2numpy_cv2, tensor2pil, numpy_cv2tensor, Pillow_Color_Names, clean_up, get_dtype_by_name, CustomModelPatcher, Kwargs, logger
 from ... import comfy_temp_dir
 from ...UL_common.pretrained_config_dirs import SD15_Base_pretrained_dir
-from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, soft_empty_cache, vae_offload_device, load_model_gpu
+from comfy.model_management import unet_offload_device, get_torch_device, text_encoder_offload_device, total_vram
+from comfy.model_patcher import ModelPatcher
 import folder_paths
-import einops
 import copy
 import latent_preview
-from comfy.latent_formats import SD15
+from PIL import ImageColor
+import comfy.sd
 
 MiaoBi_tokenizer_dir = os.path.join(SD15_Base_pretrained_dir, 'MiaoBi_tokenizer')
+Clip_l_tokenizer_dir = os.path.join(SD15_Base_pretrained_dir, 'tokenizer')
 Random_Gen_Mask_path = os.path.join(comfy_temp_dir,  "AnyText_random_mask_pos_img.png")
+lowvram = total_vram<6000
 
 # is_chinese_prompt = check_chinese(prompt_replace(prompt))
 
@@ -29,15 +31,16 @@ class UL_AnyTextSampler:
             "required": {
                 "model": ("AnyText_Model", ),
                 "positive": ("CONDITIONING", ),
-                "negative": ("CONDITIONING", ), 
-                # "seed": ("INT", {"default": 88888888, "min": 0, "max": 4294967296}),
+                "negative": ("CONDITIONING", ),
                 "seed": ("INT", {"default": 88888888, "min": 0, "max": 0xFFFFFFFFFFFFFFFF}),
                 "steps": ("INT", {"default": 20, "min": 1, "max": 100}),
                 "cfg": ("FLOAT", { "default": 9, "min": 1, "max": 99, "step": 0.1}),
                 "strength": ("FLOAT", {"default": 1.00, "min": 0, "max": 2, "step": 0.01}),
+                "attnx_scale": ("FLOAT", {"default": 1.00, "min": 0, "max": 2, "step": 0.01}),
                 "eta": ("FLOAT", {"default": 0, "min": 0, "max": 1, "step": 0.1}),
-                "keep_model_loaded": ("BOOLEAN", {"default": True, "label_on": "yes", "label_off": "no", "tooltip": "Warning: do not delete model unless this node no longer needed, it will try release device_memory and ram. if checked and want to continue node generation, use ComfyUI-Manager `Free model and node cache` to reset node state or change parameter in Loader node to activate.\n注意：仅在这个节点不再需要时删除模型，将尽量释放系统内存和设备专用内存。如果删除后想继续使用此节点，使用ComfyUI-Manager插件的`Free model and node cache`重置节点状态或者更换模型加载节点的参数来激活。"}),
-                "keep_model_device": ("BOOLEAN", {"default": True, "label_on": "comfy", "label_off": "device", "tooltip": "Keep model in comfy_auto_unet_offload_device (HIGH_VRAM: device, Others: cpu) or device_memory after generation.\n生图完成后，模型转移到comfy自动unet选择设备(HIGH_VRAM: device, 其他: cpu)或者保留在设备专用内存上。"}),
+                # "backend_for_v1": ("BOOLEAN", {"default": True, "label_on": "v2", "label_off": "v1", "tooltip": "", "advanced": False}),
+                "keep_load": ("BOOLEAN", {"default": True, "label_on": "yes", "label_off": "no", "tooltip": "Warning: do not delete model unless this node no longer needed, it will try release device_memory and ram. if checked and want to continue node generation, use ComfyUI-Manager `Free model and node cache` to reset node state or change parameter in Loader node to activate.\n注意：仅在这个节点不再需要时删除模型，将尽量释放系统内存和设备专用内存。如果删除后想继续使用此节点，使用ComfyUI-Manager插件的`Free model and node cache`重置节点状态或者更换模型加载节点的参数来激活。"}),
+                "keep_device": ("BOOLEAN", {"default": True, "label_on": "comfy", "label_off": "device", "tooltip": "Keep model in comfy_auto_unet_offload_device (HIGH_VRAM: device, Others: cpu) or device_memory after generation.\n生图完成后，模型转移到comfy自动unet选择设备(HIGH_VRAM: device, 其他: cpu)或者保留在设备专用内存上。"}),
             },
         }
 
@@ -46,17 +49,29 @@ class UL_AnyTextSampler:
     CATEGORY = "UL Group/Image Generation"
     FUNCTION = "sample"
     TITLE = "AnyText Sampler"
-    DESCRIPTION = "AnyText: Multilingual Visual Text Generation And Editing.\nAnyText comprises a diffusion pipeline with two primary elements: an auxiliary latent module and a text embedding module. The former uses inputs like text glyph, position, and masked image to generate latent features for text generation or editing. The latter employs an OCR model for encoding stroke data as embeddings, which blend with image caption embeddings from the tokenizer to generate texts that seamlessly integrate with the background. We employed text-control diffusion loss and text perceptual loss for training to further enhance writing accuracy.\nAnyText多语言文字生成与编辑\n通过创新性的算法设计，可以支持中文、英语、日语、韩语等多语言的文字生成，还支持对输入图片中的文字内容进行编辑。本模型所涉及的文字生成技术为电商海报、Logo设计、创意涂鸦、表情包等新型AIGC应用提供了可能性。\nAnyText主要基于扩散（Diffusion）模型，包含两个核心模块：隐空间辅助模块（Auxiliary Latent Module）和文本嵌入模块（Text Embedding Module）。其中，隐空间辅助模块对三类辅助信息（字形、文字位置和掩码图像）进行编码并构建隐空间特征图像，用来辅助视觉文字的生成；文本嵌入模块则将描述词中的语义部分与待生成文本的字形部分解耦，使用图像编码模块单独提取字形信息后再与语义信息做融合，既有助于文字的书写精度，也有利于提升文字与背景的一致性。训练阶段，除了使用扩散模型常用的噪声预测损失，我们还增加了文本感知损失，在图像空间对每个生成文本区域进行像素级的监督，以进一步提升文字书写精度。"
+    DESCRIPTION = "AnyText: Multilingual Visual Text Generation And Editing.\nAnyText多语言文字生成与编辑\n通过创新性的算法设计，可以支持中文、英语、日语、韩语等多语言的文字生成，还支持对输入图片中的文字内容进行编辑。本模型所涉及的文字生成技术为电商海报、Logo设计、创意涂鸦、表情包等新型AIGC应用提供了可能性。"
 
-    def sample(self, model, positive, negative, seed, steps, cfg, strength, eta, keep_model_loaded, keep_model_device):
-        model.model.diffusion_model.to(get_torch_device())
-        model.control_model.to(get_torch_device())
+    def sample(self, model, positive, negative, seed, steps, cfg, strength, attnx_scale, eta, keep_load, keep_device, backend_for_v1=True):
+        if lowvram:
+            model.custom_load(
+                [model.model.model, model.model.control_model],
+                force_load=True
+            )
+        else:
+            model.load_all_gpu()
         
-        from AnyTextControlDiffusion.cldm.ddim_hacked import DDIMSampler
+        isV2 = False
+        if model.model_type == "AnyText" and not backend_for_v1:
+            from AnyTextControlDiffusion.cldm.ddim_hacked import DDIMSampler
+        else:
+            from AnyText2ControlDiffusion.cldm.ddim_hacked import DDIMSampler
+            isV2 = True
         
-        model.control_scales = ([strength] * 13)
+        model.model.control_scales = ([strength] * 13)
+        if isV2:
+            model.model.attnx_scale = attnx_scale
         
-        ddim_sampler = DDIMSampler(model, device=get_torch_device())
+        ddim_sampler = DDIMSampler(model.model, device=model.load_device)
         callback = latent_preview.prepare_callback(model, steps) #latent preview
         latents, intermediates = ddim_sampler.sample(
             S=steps, 
@@ -67,44 +82,28 @@ class UL_AnyTextSampler:
             eta=eta,
             unconditional_guidance_scale=cfg,
             unconditional_conditioning=negative[0][0],
-            callback=callback, #后端代码有timesteps的callback，已经魔改支持latent preview
-            generator=torch.Generator(get_torch_device()).manual_seed(seed),
+            callback=callback, #后端代码有timesteps的callback，已经修改支持latent preview
+            generator=torch.Generator(model.load_device).manual_seed(seed),
         )
         
-        if not keep_model_loaded:
-            del model.model.diffusion_model
-            del model.control_model
-            del model.cond_stage_model
-            del model.embedding_manager
-            del model.text_predictor
-            soft_empty_cache(True)
-        elif keep_model_device and keep_model_loaded and torch.cuda.is_available():
-            model.model.diffusion_model.to(unet_offload_device())
-            model.control_model.to(text_encoder_offload_device())
-            model.embedding_manager.to(text_encoder_offload_device())
-            soft_empty_cache(True)
+        if keep_load and keep_device and lowvram:
+            model.custom_offload(
+                [model.model.model, model.model.control_model]
+            )
+        elif keep_load and keep_device and not lowvram:
+            model.offload_or_unload(keep_load, keep_device)
+        elif not keep_load:
+            model.offload_or_unload(keep_load)
         
         # model['model'].first_stage_model.to(get_torch_device())
-        
         # samples = model['model'].decode_first_stage(latents)
         # samples = (einops.rearrange(samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
-        
-        # if not keep_model_loaded:
-        #     del model['model'].first_stage_model
-        #     del model['model']
-        #     soft_empty_cache(True)
-        #     clean_up()
-        # elif keep_model_loaded and torch.cuda.is_available():
-        #     model['model'].first_stage_model.to(vae_offload_device())
-        #     soft_empty_cache(True)
-        #     clean_up()
         
         # result = []
         # for sample in samples:
         #     result.append(pil2tensor(sample))
         # result = torch.cat(result, dim=0)
         
-        # return(result, {"samples": 1. / 0.18215 * latents})
         return({"samples": 1. / 0.18215 * latents}, )
 
 class UL_AnyTextLoader:
@@ -114,8 +113,10 @@ class UL_AnyTextLoader:
             "required": {
                 "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
                 "control_net_name": (["None"] + folder_paths.get_filename_list("controlnet"), ),
-                "miaobi_clip": (["None"] + folder_paths.get_filename_list("text_encoders"), ),
+                "miaobi_clip": (["None"] + folder_paths.get_filename_list("text_encoders"), {"advanced": True}),
                 "weight_dtype": (["auto", "fp16", "fp32", "bf16", "fp8_e4m3fn", "fp8_e4m3fnuz", "fp8_e5m2", "fp8_e5m2fnuz"],{"default":"auto", "tooltip": "Only fp16 and fp32 works.\n仅支持fp16和fp32。"}),
+                "init_device": (["auto", "device", "cpu"], {"tooltip": "", "advanced": True}),
+                # "backend_for_v1": ("BOOLEAN", {"default": True, "label_on": "v2", "label_off": "v1", "tooltip": "", "advanced": True}),
                 }
             }
 
@@ -125,59 +126,115 @@ class UL_AnyTextLoader:
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText Loader"
     DESCRIPTION = "Miaobi_clip is optional, for chinese prompt text_encode without translator.\nOption 1: load full AnyText ckeckpoint in ckpt_name without controlnet.\nOption 2: load custom sd1.5 ckeckpoint with AnyText control_net.\nmiaobi_clip是可选项，用于输入中文提示词但不使用翻译机。\n选项1： 加载完整的AnyText模型，此时勿加载control_net。\n选项2：加载自定义sd1.5模型和AnyText的control_net。"
+    
+    def __init__(self):
+        self.model_patcher = None
+        self.load_kwargs = None
 
-    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype):
+    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype, init_device, backend_for_v1=True):
         import sys
         AnyTextBackbone_Dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Site_Packages")
         sys.path.append(AnyTextBackbone_Dir)
-        from AnyTextControlDiffusion.cldm.model import create_model
+        
+        if not backend_for_v1:
+            from AnyTextControlDiffusion.cldm.model import create_model
+        else:
+            from AnyText2ControlDiffusion.cldm.model import create_model
     
+        weight_dtype = weight_dtype if weight_dtype in ["fp16", "fp32"] else "fp16"
         dtype = get_dtype_by_name(weight_dtype)
+        init_device = unet_offload_device() if init_device == "auto" else torch.device("cpu") if init_device == "cpu" else get_torch_device()
+        
         ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
         cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models_yaml', 'anytext_sd15.yaml')
+        v2_cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models_yaml', 'anytext2_sd15.yaml')
+        is_miaobi, model_type = False, "AnyText"
         
-        model = create_model(cfg_path, use_fp16=(dtype == torch.float16)) #dtype control
-        state_dict = load_torch_file(ckpt_path, safe_load=True)
+        if self.load_kwargs != (ckpt_name+control_net_name+miaobi_clip+weight_dtype):
+            self.load_kwargs = (ckpt_name+control_net_name+miaobi_clip+weight_dtype)
+            if self.model_patcher != None:
+                self.model_patcher.offload_or_unload(False)
+                del self.model_patcher
+                
+            state_dict = load_torch_file(ckpt_path, safe_load=True)
+            if "embedding_manager.font_predictor.backbone.block_list.0._depthwise_conv._batch_norm.num_batches_tracked" in state_dict.keys():
+                from AnyText2ControlDiffusion.cldm.model import create_model
+                cfg_path, model_type = v2_cfg_path, "AnyText2"
         
-        if control_net_name != "None":
-            anytext_controlnet_path = folder_paths.get_full_path_or_raise("controlnet", control_net_name)
-            anytext_state_dict = load_torch_file(anytext_controlnet_path, safe_load=True)
-            for k in list(anytext_state_dict):
-                state_dict[k] = anytext_state_dict[k]
-                anytext_state_dict[k] = None
-            # state_dict.update(anytext_state_dict)
-            del anytext_state_dict
-          
-        if miaobi_clip != "None":
-            from transformers import AutoTokenizer
-            custom_tokenizer =  AutoTokenizer.from_pretrained(MiaoBi_tokenizer_dir, trust_remote_code=True)
-            model.cond_stage_model.tokenizer = custom_tokenizer
-            clip_path = folder_paths.get_full_path_or_raise("text_encoders", miaobi_clip)
+            if control_net_name != "None":
+                anytext_controlnet_path = folder_paths.get_full_path_or_raise("controlnet", control_net_name)
+                anytext_state_dict = load_torch_file(anytext_controlnet_path, safe_load=True)
+                if "embedding_manager.font_predictor.backbone.block_list.0._depthwise_conv._batch_norm.num_batches_tracked" in anytext_state_dict.keys():
+                    from AnyText2ControlDiffusion.cldm.model import create_model
+                    cfg_path, model_type = v2_cfg_path, "AnyText2"
+                for k in list(anytext_state_dict):
+                    state_dict[k] = anytext_state_dict.pop(k)
+                del anytext_state_dict
+            
+            if miaobi_clip != "None":
+                from transformers import AutoTokenizer
+                tokenizer =  AutoTokenizer.from_pretrained(MiaoBi_tokenizer_dir, trust_remote_code=True)
+                clip_path = folder_paths.get_full_path_or_raise("text_encoders", miaobi_clip)
+                for k in list(state_dict.keys()):
+                    if k.startswith("cond_stage_model"):
+                        state_dict.pop(k)
+                clip_l_sd = load_torch_file(clip_path, safe_load=True)
+                is_miaobi = True
+            else:  
+                clip_l_sd = {}
+                for k in list(state_dict.keys()):
+                    if k.startswith("cond_stage_model"):
+                        clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = state_dict.pop(k)
+            
+            model = create_model(cfg_path, use_fp16=(dtype == torch.float16), is_miaobi=is_miaobi) #dtype control
+            
+            model.load_state_dict(state_dict, strict=False)
+            
+            vae_sd = {}
             for k in list(state_dict.keys()):
-                if k.startswith("cond_stage_model"):
-                    state_dict[k] = None
-                    state_dict.pop(k)
-            clip_l_sd = load_torch_file(clip_path, safe_load=True)
-        else:  
-            clip_l_sd = {}
-            for k in list(state_dict.keys()):
-                if k.startswith("cond_stage_model"):
-                    clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = state_dict[k]
-                    state_dict.pop(k)
+                if k.startswith("first_stage_model"):
+                    vae_sd[k.replace("first_stage_model.", "")] = state_dict.pop(k)
+            
+            del state_dict
+            model.cond_stage_model.transformer.load_state_dict(clip_l_sd, strict=False)
+            del clip_l_sd
+            if is_miaobi:
+                model.cond_stage_model.tokenizer = tokenizer
+            model.cond_stage_model.freeze()
+            clean_up()
+            
+            model.eval().to(init_device, dtype)
+            
+            sub_models = [
+                model.first_stage_model,
+                model.cond_stage_model,
+                model.control_model,
+                model.embedding_manager,
+                model.text_predictor
+            ]
+            
+            sub_patchers = [
+                ModelPatcher(model.cond_stage_model, get_torch_device(), text_encoder_offload_device()),
+                ModelPatcher(model.control_model, get_torch_device(), text_encoder_offload_device()),
+                ModelPatcher(model.embedding_manager, get_torch_device(), text_encoder_offload_device()),
+                ModelPatcher(model.text_predictor, get_torch_device(), text_encoder_offload_device())
+            ]
+            
+            self.model_patcher  =CustomModelPatcher(model, get_torch_device(), unet_offload_device())
+            self.model_patcher.sub_models = sub_models
+            self.model_patcher.sub_patchers = sub_patchers
+            self.model_patcher.dtype = dtype
+            self.model_patcher.model_type = model_type
+            self.model_patcher.load_kwargs = (ckpt_name+control_net_name+miaobi_clip+weight_dtype)
+            self.model_patcher.device = torch.device("cpu")
+            self.model_patcher.set_latent_preview()
+            
+        logger.info(f'image_model_type: {model_type}, current_device: {init_device}, load_device: {self.model_patcher.load_device}, offload_device: {self.model_patcher.offload_device}, compute_dtype: {dtype}')
         
-        model.load_state_dict(state_dict, strict=False)
-        del state_dict
-        model.cond_stage_model.transformer.load_state_dict(clip_l_sd, strict=False)
-        del clip_l_sd
-        model.cond_stage_model.freeze()
-        clean_up()
+        vae = comfy.sd.VAE(sd=vae_sd)
+        del vae_sd
         
-        model.eval().to(get_torch_device(), dtype)
-        
-        model.__setattr__("load_device", get_torch_device())
-        model.model.__setattr__("latent_format", SD15())
-        
-        return (model, VAE(copy.deepcopy(model.first_stage_model)), os.path.basename(ckpt_path), )
+        return (self.model_patcher, vae, os.path.basename(ckpt_path), )
 
 class UL_AnyTextFontImg:
     @classmethod
@@ -382,11 +439,16 @@ class UL_AnyTextEncoder:
             },
             "optional": {
                 "image": ("IMAGE", ),
+                "fonts": ("ANYTEXT_FONTS", ),
+                "font_apply": ("BOOLEAN", {"default": True, "label_on": "official", "label_off": "custom", "tooltip": "", "advanced": True}),
+                "show_glyph": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": True}),
             }
         }
 
-    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "LATENT", )
-    RETURN_NAMES = ("positive", "negative", "mask_img", "masked_x", )
+    # RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "LATENT", "IMAGE", "IMAGE", "IMAGE", "IMAGE", "IMAGE", "MASK", )
+    # RETURN_NAMES = ("positive", "negative", "mask_img", "masked_x", "font_img", "gly_line", "glyphs", "masked_img", "font_hint_img", "mask", )
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "IMAGE", )
+    RETURN_NAMES = ("positive", "negative", "font_hint", "font", )
     FUNCTION = "encoder"
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText Encoder"
@@ -394,209 +456,92 @@ class UL_AnyTextEncoder:
     def __init__(self):
         self.font = None
         self.font_name = None
+        self.loaded = False
+        self.load_kwargs = None
     
-    def encoder(self, model, font_name, mask, prompt, texts, latent, mode, sort_radio, a_prompt, n_prompt, revise_pos, random_mask, image=None):
-        model.control_model.to(text_encoder_offload_device())
-        model.model.diffusion_model.to(unet_offload_device())
-        
-        from .AnyText_scripts.AnyText_pipeline import separate_pos_imgs, find_polygon, draw_glyph, draw_glyph2
-        from .AnyText_scripts.AnyText_pipeline_util import check_channels
-        
-        max_chars = 50
-        batch_size, height, width = latent["samples"].shape[0], latent["samples"].shape[2] * 8, latent["samples"].shape[3] * 8 # B, C, H, W
-        
-        dtype = model.model.diffusion_model.dtype
+    def encoder(self, model, font_name, mask, prompt, texts, latent, mode, sort_radio, a_prompt, n_prompt, revise_pos, random_mask, image=None, fonts=None, show_glyph=False, font_apply=True):
+        if not self.loaded or self.loaded != model.load_kwargs or not lowvram:
+            self.loaded = True
+            self.load_kwargs = model.load_kwargs
+            model.load_all_gpu()
+            
+        if lowvram:
+            model.custom_load(
+                [
+                    model.model.cond_stage_model,
+                    model.model.first_stage_model,
+                    model.model.embedding_manager,
+                    model.model.text_predictor
+                ]
+            )
         
         font_path = os.path.join(folder_paths.models_dir, "fonts", font_name)
-        if font_name == "Auto_DownLoad":
-            font_path = os.path.join(folder_paths.models_dir, "fonts", "SourceHanSansSC-Medium.otf")
-            if not os.path.exists(font_path):
-                from huggingface_hub import hf_hub_download as hg_hf_hub_download
-                hg_hf_hub_download(
-                    repo_id="Sanster/AnyText", 
-                    filename="SourceHanSansSC-Medium.otf", 
-                    local_dir=os.path.join(folder_paths.models_dir, "fonts"), 
-                    )
+        font_path = os.path.join(folder_paths.models_dir, "fonts", "SourceHanSansSC-Medium.otf") if not os.path.exists(font_path) else font_path
+        if not os.path.exists(font_path):
+            from huggingface_hub import hf_hub_download as hg_hf_hub_download
+            hg_hf_hub_download(
+                repo_id="Sanster/AnyText", 
+                filename="SourceHanSansSC-Medium.otf", 
+                local_dir=os.path.join(folder_paths.models_dir, "fonts"), 
+                )
                 
         if self.font_name != font_name: #Avoid duplicate font load.
             self.font = ImageFont.truetype(font_path, size=60, encoding='utf-8')
                     
-        # tensor图片转换为numpy图片
-        pos_image = tensor2numpy_cv2(mask)
-        pos_image = resize_image(pos_image, max(width, height))
-        pos_image = cv2.cvtColor(pos_image, cv2.COLOR_GRAY2RGB) # cv2二值图(mask)转rgb
-        pos_image = cv2.bitwise_not(pos_image) # cv2图片取反
-        
-        if mode:
-            mode = 'text-generation'
-            revise_pos = revise_pos
+        if model.model_type == "AnyText":
+            from .AnyText_scripts.AnyText_Infer import encode
         else:
-            if image == None:
-                raise ValueError('Edit mode need a image.')
-            ori_image = tensor2numpy_cv2(image)
-            ori_image = resize_image(ori_image, max(width, height))
-            ori_image = cv2.cvtColor(ori_image, cv2.COLOR_BGR2RGB)
-            mode = 'text-editing'
-            revise_pos = False
-        
-        n_lines = len(texts)
-        h, w = height, width
-        
-        if random_mask == True:
-            mask = generate_rectangles(width, height, n_lines, max_trys=500)
-            pos_image = cv2.imread(Random_Gen_Mask_path)
-            if n_lines == 1 or n_lines % 2 ==0:
-                mask = pos_image
-            mask = numpy_cv2tensor(mask)
-        else:
-            pos_image = pos_image
-            mask = numpy_cv2tensor(pos_image)
-        
-        sort_radio = '↔' if sort_radio else '↕'
-        
-        anytext_prompt = prompt
-        
-        if anytext_prompt is None and texts is None:
-            raise ValueError("Invalid prompt: 无效提示词。")
-        
-        if mode in ['text-generation', 'gen']:
-            if random_mask:
-                edit_image = np.ones((h, w, 3)) * 127.5  # empty mask image
-                edit_image = resize_image(edit_image, max_length=max(h, w))
-                h, w = edit_image.shape[:2]
-            else:
-                edit_image = pos_image[..., ::-1]
-                edit_image = resize_image(edit_image, max_length=max(h, w))
-                h, w = edit_image.shape[:2]
-                edit_image = np.ones((h, w, 3)) * 127.5  # empty mask image
-        elif mode in ['text-editing', 'edit']:
-            if pos_image is None or ori_image is None:
-                return None, -1, "Reference image and position image are needed for text editing!", ""
-            if isinstance(ori_image, np.ndarray):
-                ori_image = ori_image[..., ::-1]
-                assert ori_image is not None, f"Can't read ori_image image from{ori_image}!"
-            elif isinstance(ori_image, torch.Tensor):
-                ori_image = ori_image.cpu().numpy()
-                
-            edit_image = ori_image.clip(1, 255)  # for mask reason
-            edit_image = check_channels(edit_image)
-            edit_image = resize_image(edit_image, max_length=max(h, w))  # make w h multiple of 64, resize if w or h > max_length
-            h, w = edit_image.shape[:2]  # change h, w by input ref_img
-        # preprocess pos_imgs(if numpy, make sure it's white pos in black bg)
-        if pos_image is None:
-            pos_imgs = np.zeros((w, h, 1))
-        if isinstance(pos_image, np.ndarray):
-            pos_image = pos_image[..., ::-1]
-            pos_image = resize_image(pos_image, max_length=max(h, w))
-            pos_image = cv2.resize(pos_image, (w, h))
-            assert pos_image is not None, f"Can't read pos_image image from{pos_image}!"
-            pos_imgs = 255-pos_image
-        elif isinstance(pos_image, torch.Tensor):
-            pos_imgs = pos_image.cpu().numpy()
+            from .AnyText_scripts.AnyText2_Infer import encode
             
-        pos_imgs = pos_imgs[..., 0:1]
-        pos_imgs = cv2.convertScaleAbs(pos_imgs)
-        _, pos_imgs = cv2.threshold(pos_imgs, 254, 255, cv2.THRESH_BINARY)
-        # seprate pos_imgs
-        pos_imgs = separate_pos_imgs(pos_imgs, sort_radio)
-        if len(pos_imgs) == 0:
-            pos_imgs = [np.zeros((h, w, 1))]
-        if len(pos_imgs) < n_lines:
-            if n_lines == 1 and texts[0] == ' ':
-                # pass  # text-to-image without text
-                print('\033[93m', f'Warning: text-to-image without text.', '\033[0m')
-            else:
-                raise ValueError(f'Found {len(pos_imgs)} positions that < needed {n_lines} from prompt, check and try again(手绘遮罩数少于要绘制的文本数，检查修改再重试)!')
-        elif len(pos_imgs) > n_lines:
-            print('\033[93m', f'Warning: found {len(pos_imgs)} positions that > needed {n_lines} from prompt.', '\033[0m')
-            
-        # get pre_pos, poly_list, hint that needed for anytext
-        pre_pos = []
-        poly_list = []
-        for input_pos in pos_imgs:
-            if input_pos.mean() != 0:
-                input_pos = input_pos[..., np.newaxis] if len(input_pos.shape) == 2 else input_pos
-                poly, pos_img = find_polygon(input_pos)
-                pre_pos += [pos_img/255.]
-                poly_list += [poly]
-            else:
-                pre_pos += [np.zeros((h, w, 1))]
-                poly_list += [None]
-        np_hint = np.sum(pre_pos, axis=0).clip(0, 1)
+        cond, un_cond, h, w, font_hint_img, glyph_img = encode(
+            model=model,
+            font=self.font,
+            mask=mask,
+            prompt=prompt,
+            texts=texts,
+            latent=latent,
+            mode=mode,
+            sort_radio=sort_radio,
+            a_prompt=a_prompt,
+            n_prompt=n_prompt,
+            revise_pos=revise_pos,
+            random_mask=random_mask,
+            Random_Gen_Mask_path=Random_Gen_Mask_path,
+            image=image,
+            fonts=fonts,
+            font_apply=font_apply,
+            show_glyph=show_glyph
+        )
         
-        # prepare info dict
-        info = {}
-        info['glyphs'] = []
-        info['gly_line'] = []
-        info['positions'] = []
-        info['n_lines'] = [len(texts)]*batch_size
-        gly_pos_imgs = []
-        for i in range(len(texts)):
-            text = texts[i]
-            if len(text) > max_chars:
-                print(f'"{text}" length > max_chars: {max_chars}, will be cut off...')
-                text = text[:max_chars]
-            gly_scale = 2
-            if pre_pos[i].mean() != 0:
-                gly_line = draw_glyph(self.font, text)
-                glyphs, _ = draw_glyph2(self.font, text, poly_list[i], scale=gly_scale, width=w, height=h, add_space=False)
-                gly_pos_img = cv2.drawContours(glyphs*255, [poly_list[i]*gly_scale], 0, (255, 255, 255), 1)
-                if revise_pos:
-                    resize_gly = cv2.resize(glyphs, (pre_pos[i].shape[1], pre_pos[i].shape[0]))
-                    new_pos = cv2.morphologyEx((resize_gly*255).astype(np.uint8), cv2.MORPH_CLOSE, kernel=np.ones((resize_gly.shape[0]//10, resize_gly.shape[1]//10), dtype=np.uint8), iterations=1)
-                    new_pos = new_pos[..., np.newaxis] if len(new_pos.shape) == 2 else new_pos
-                    contours, _ = cv2.findContours(new_pos, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                    if len(contours) != 1:
-                        print(f'Fail to revise position {i} to bounding rect, remain position unchanged...')
-                    else:
-                        rect = cv2.minAreaRect(contours[0])
-                        poly = np.int0(cv2.boxPoints(rect))
-                        pre_pos[i] = cv2.drawContours(new_pos, [poly], -1, 255, -1) / 255.
-                        gly_pos_img = cv2.drawContours(glyphs*255, [poly*gly_scale], 0, (255, 255, 255), 1)
-                gly_pos_imgs += [gly_pos_img]  # for show
-            else:
-                glyphs = np.zeros((h*gly_scale, w*gly_scale, 1))
-                gly_line = np.zeros((80, 512, 1))
-                gly_pos_imgs += [np.zeros((h*gly_scale, w*gly_scale, 1))]  # for show
-            pos = pre_pos[i]
-            info['glyphs'] += [arr2tensor(glyphs, batch_size, dtype)]
-            info['gly_line'] += [arr2tensor(gly_line, batch_size, dtype)]
-            info['positions'] += [arr2tensor(pos, batch_size, dtype)]
-            
-        # get masked_x
-        masked_img = ((edit_image.astype(np.float32) / 127.5) - 1.0)*(1-np_hint)
-        masked_img = np.transpose(masked_img, (2, 0, 1))
-        masked_img = torch.from_numpy(masked_img.copy()).float().to(get_torch_device(), dtype)
+        if lowvram:
+            model.custom_offload(
+                [
+                    model.model.cond_stage_model,
+                    model.model.first_stage_model,
+                    model.model.embedding_manager,
+                    model.model.text_predictor
+                ],
+                do_clean=True
+            )
         
-        model.first_stage_model.to(get_torch_device())
-        encoder_posterior = model.encode_first_stage(masked_img[None, ...])
-        masked_x = (model.get_first_stage_encoding(encoder_posterior).detach()).to(dtype)
-        model.first_stage_model.to(text_encoder_offload_device())
+        if show_glyph:
+            font_hint_list = []
+            glyph_dir = os.path.join(comfy_temp_dir, "AnyText")
+            for i in os.listdir(glyph_dir):
+                if i.startswith("glyph2_"):
+                    img = pil2tensor(Image.open(os.path.join(glyph_dir, i)))
+                    font_hint_list.append(img)
+            font_hint_img = torch.cat(font_hint_list, dim=0)
         
-        info['masked_x'] = torch.cat([masked_x for _ in range(batch_size)], dim=0)
-        hint = arr2tensor(np_hint, batch_size, dtype)
-        
-        model.cond_stage_model.to(get_torch_device())
-        model.embedding_manager.to(get_torch_device())
-        model.text_predictor.to(get_torch_device())
-        cond = model.get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[anytext_prompt + ' , ' + a_prompt] * batch_size], text_info=info))
-        un_cond = model.get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[n_prompt] * batch_size], text_info=info))
-        model.cond_stage_model.to(text_encoder_offload_device())
-        model.embedding_manager.to(text_encoder_offload_device())
-        model.text_predictor.to(text_encoder_offload_device())
-        
-        if torch.cuda.is_available():
-            soft_empty_cache(True)
-            clean_up()
-        
-        return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": batch_size}]], [[un_cond, {"pooled_output": {}}]], mask, {"samples": 1. / 0.18215 * masked_x})
+        # return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], mask, {"samples": 1. / 0.18215 * masked_x}, font_img, gly_line_img, glyphs_img, masked_img, font_hint_img, glyph_img, )
+        return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], font_hint_img, glyph_img, )
     
 class UL_AnyTextFormatter:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "prompt": ("STRING", {"default": 'close-up of hakurei reimu sitting in a room, with text: "博丽灵梦" on the wall.', "multiline": True, "dynamicPrompts": True}),
+                "prompt": ("STRING", {"default": 'close-up of hakurei reimu sitting in a room, with text: "博丽灵梦" on the wall.\nclose-up of 18yo beautiful chinese girl, standing in a county yard, with text: "emm" and "博丽灵梦" in the background.', "multiline": True, "dynamicPrompts": True}),
             },
             "optional": {
                 
@@ -614,107 +559,116 @@ class UL_AnyTextFormatter:
             prompt=prompt,
         )
         return (prompt, texts)
-
-class UL_AnyTextLoaderTest:
+    
+class UL_AnyText2Fonts:
     @classmethod
-    def INPUT_TYPES(self):
+    def INPUT_TYPES(cls):
+        font_list = ['None'] + os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
+        AnyText_colors = copy.deepcopy(["None"]+Pillow_Color_Names)
         return {
             "required": {
-                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
-                "control_net_name": (["None"] + folder_paths.get_filename_list("controlnet"), ),
-                "miaobi_clip": (["None"] + folder_paths.get_filename_list("text_encoders"), ),
-                "weight_dtype": (["auto", "fp16", "fp32", "bf16", "fp8_e4m3fn", "fp8_e4m3fnuz", "fp8_e5m2", "fp8_e5m2fnuz"],{"default":"auto", "tooltip": "Only fp16 and fp32 works.\n仅支持fp16和fp32。"}),
-                },
+                "font_hollow": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no", "tooltip": "", "advanced": False}),
+                "font_name": (font_list, {"default": "AnyText-Arial-Unicode.ttf"}),
+                "font_color": (AnyText_colors, {"default": "red"}),
+                
+                "font_name1": (font_list, {"default": "阿里妈妈东方大楷.otf"}),
+                "font_color1": (AnyText_colors, {"default": "green"}),
+                
+                "font_name2": (font_list, {"default": "仿乾隆字体.ttf"}),
+                "font_color2": (AnyText_colors, {"default": "blue"}),
+                
+                "font_name3": (font_list, {"default": "站酷小薇LOGO体.otf"}),
+                "font_color3": (AnyText_colors, {"default": "white"}),
+                
+                "font_name4": (font_list, {"default": "None"}),
+                "font_color4": (AnyText_colors, {"default": "None"}),
+                
+                "font_name5": (font_list, {"default": "索尼兰亭.ttf"}),
+                "font_color5": (AnyText_colors, {"default": "yellow"}),
+                
+                "font_name6": (font_list, {"default": "日系筑紫a丸GBK版.ttf"}),
+                "font_color6": (AnyText_colors, {"default": "pink"}),
+                
+                "font_name7": (font_list, {"default": "阿朱泡泡体.ttf"}),
+                "font_color7": (AnyText_colors, {"default": "gold"}),
+            },
             "optional": {
-                "c_model" :("MODEL",),
-                "clip": ("CLIP",),
-                "vae": ("VAE",),
+                # "image": ("IMAGE", ),
+                # "image1": ("IMAGE", ),
+                # "image2": ("IMAGE", ),
+                # "image3": ("IMAGE", ),
+                # "image4": ("IMAGE", ),
+                # "image5": ("IMAGE", ),
+                # "image6": ("IMAGE", ),
+                # "image7": ("IMAGE", ),
             }
         }
 
-    RETURN_TYPES = ("AnyText_Model", "VAE", "STRING", )
-    RETURN_NAMES = ("model", "vae", "ckpt_name", )
-    FUNCTION = "Loader"
+    RETURN_TYPES = ("ANYTEXT_FONTS", "DICT", )
+    RETURN_NAMES = ("fonts", "kwargs", )
+    FUNCTION = "main"
     CATEGORY = "UL Group/Image Generation"
-    TITLE = "AnyText Loader(Test)"
-    DESCRIPTION = "Only LoRA without trigger word works.\nIf not input c_model, then load ckpt_name model.\nMiaobi_clip is optional, for chinese prompt text_encode without translator.\nOption 1: load full AnyText ckeckpoint in ckpt_name without controlnet.\nOption 2: load custom sd1.5 ckeckpoint with AnyText control_net.\n仅没有触发词的LoRA能生效。\n如果不输入c_model，则从ckpt_name加载模型。\nmiaobi_clip是可选项，用于输入中文提示词但不使用翻译机。\n选项1： 加载完整的AnyText模型，此时勿加载control_net。\n选项2：加载自定义sd1.5模型和AnyText的control_net。"
+    TITLE = "AnyText2 Fonts"
     
-    def __init__(self):
-        self.raised = False
-
-    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype, c_model=None, clip=None, vae=None):
-        if c_model != None and control_net_name == "None" and not self.raised:
-            self.raised = True
-            raise ValueError("If input c_model, AnyText Control model is essential, or text mask will not work.\n如果输入c_model，则必须输入AnyText Control model，否则文字遮罩无效。")
-            
-        from AnyTextControlDiffusion.cldm.model import create_model
-    
-        dtype = get_dtype_by_name(weight_dtype)
+    def main(self, font_hollow, **font_kwargs):
+        try:
+            import webcolors
+        except Exception as e:
+            raise ValueError("webcolors not installed, python pip install webcolors")
         
-        ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
-        cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models_yaml', 'anytext_sd15.yaml')
+        font_paths = []
+        font_colors = []
+                
+        for i, j in font_kwargs.items():
+            if "font_name" in i:
+                font_path = os.path.join(folder_paths.models_dir, "fonts", j)
+                if os.path.exists(font_path):
+                    font_paths.append(ImageFont.truetype(font_path, size=60))
+                else:
+                    font_paths.append('No Font(不指定字体)')
+            if "font_color" in i:
+                if j != "None":
+                    font_colors.append(f'rgba{webcolors.name_to_rgb(j)+(1,)}')
+                else:
+                    font_colors.append(None)
+                    
         
-        model = create_model(cfg_path, use_fp16=(dtype == torch.float16)) #dtype control
+        glyline_font_path = ['None'] * 8
+        text_colors = ' '.join(['500,500,500']*8)
+        for idx, f in enumerate(font_paths):
+            if f == 'No Font(不指定字体)':
+                pass
+            # elif f == 'Mimic From Image(模仿图中字体)':
+            #     img = mimic_list[idx]
+            #     if 'layers' in img and img['layers'][0][..., 3:].mean() > 0:
+            #         font_hint_image[idx] = img['background'][..., :3][..., ::-1]
+            #         font_hint_mask[idx] = img['layers'][0][..., 3:]
+            #     else:
+            #         font_hint_image[idx] = None
+            #         font_hint_mask[idx] = None
+            else:
+                glyline_font_path[idx] = f
+        for idx, c in enumerate(font_colors):
+            if c is not None:
+                strs = text_colors.split()
+                if isinstance(c, str) and 'rgba' in c:
+                    rgb = [int(float(i)) for i in c.split('(')[-1].split(')')[0].split(',')[:3]]  # for gradio 5.X
+                else:
+                    rgb = ImageColor.getcolor(c, "RGB")
+                if list(rgb) == [0, 0, 0] or rgb == [255, 255, 255]:
+                    rgb = (500, 500, 500)
+                rgb = ','.join([str(i) for i in list(rgb)])
+                strs[idx] = rgb
+                text_colors = ' '.join(strs)
+                
+        kwargs_ori = {
+            "glyline_font_path": glyline_font_path,
+            "text_colors": text_colors,
+            "font_hollow": font_hollow
+        }
+        kwargs = Kwargs(kwargs_ori)
         
-        if c_model == None:
-            state_dict = load_torch_file(ckpt_path, safe_load=True)
-        else:
-            load_model_gpu(c_model)
-            state_dict = c_model.model.state_dict_for_saving(None, vae.get_sd(), None)
-            soft_empty_cache(True)
-        
-        if control_net_name != "None":
-            anytext_controlnet_path = folder_paths.get_full_path_or_raise("controlnet", control_net_name)
-            anytext_state_dict = load_torch_file(anytext_controlnet_path, safe_load=True)
-            for k in list(anytext_state_dict):
-                state_dict[k] = anytext_state_dict[k]
-                anytext_state_dict[k] = None
-            # state_dict.update(anytext_state_dict)
-            del anytext_state_dict
-          
-        if miaobi_clip != "None":
-            from transformers import AutoTokenizer
-            custom_tokenizer =  AutoTokenizer.from_pretrained(MiaoBi_tokenizer_dir, trust_remote_code=True)
-            model.cond_stage_model.tokenizer = custom_tokenizer
-            clip_path = folder_paths.get_full_path_or_raise("text_encoders", miaobi_clip)
-            for k in list(state_dict.keys()):
-                if k.startswith("cond_stage_model"):
-                    state_dict[k] = None
-                    state_dict.pop(k)
-            clip_l_sd = load_torch_file(clip_path, safe_load=True)
-        elif clip != None and miaobi_clip == "None":
-            clip_model = clip.load_model()
-            load_model_gpu(clip_model)
-            clip_l_sd = clip.get_sd()
-            clip_l_sd = c_model.model.model_config.process_clip_state_dict_for_saving(clip_l_sd)
-            soft_empty_cache(True)
-            for k in list(clip_l_sd.keys()):
-                if k.startswith("cond_stage_model"):
-                    clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = clip_l_sd[k]
-                    clip_l_sd[k] = None
-                    clip_l_sd.pop(k)
-        elif c_model == None and miaobi_clip == "None":
-            clip_l_sd = {}
-            for k in list(state_dict.keys()):
-                if k.startswith("cond_stage_model"):
-                    clip_l_sd[k.replace("cond_stage_model.transformer.", "")] = state_dict[k]
-                    state_dict.pop(k)
-        
-        model.load_state_dict(state_dict, strict=False)
-        del state_dict
-        model.cond_stage_model.transformer.load_state_dict(clip_l_sd, strict=False)
-        del clip_l_sd
-        model.cond_stage_model.freeze()
-        if c_model != None:
-            comfy_clean_vram()
-        clean_up()
-        
-        model.eval().to(get_torch_device(), dtype)
-        
-        model.__setattr__("load_device", get_torch_device())
-        model.model.__setattr__("latent_format", SD15())
-        
-        return (model, VAE(copy.deepcopy(model.first_stage_model.to(vae_offload_device()))) if vae==None else vae, os.path.basename(ckpt_path), )
+        return (kwargs, kwargs_ori, )
 
 # Node class and display name mappings
 NODE_CLASS_MAPPINGS = {
@@ -724,26 +678,8 @@ NODE_CLASS_MAPPINGS = {
     "UL_AnyText_Composer": UL_AnyTextComposer,
     "UL_AnyTextEncoder": UL_AnyTextEncoder,
     "UL_AnyTextFormatter": UL_AnyTextFormatter,
-    "UL_AnyTextLoaderTest": UL_AnyTextLoaderTest,
+    "UL_AnyText2Fonts": UL_AnyText2Fonts
 }
-
-
-def check_overlap_polygon(rect_pts1, rect_pts2):
-    poly1 = cv2.convexHull(rect_pts1)
-    poly2 = cv2.convexHull(rect_pts2)
-    rect1 = cv2.boundingRect(poly1)
-    rect2 = cv2.boundingRect(poly2)
-    if rect1[0] + rect1[2] >= rect2[0] and rect2[0] + rect2[2] >= rect1[0] and rect1[1] + rect1[3] >= rect2[1] and rect2[1] + rect2[3] >= rect1[1]:
-        return True
-    return False
-        
-def count_lines(prompt):
-    prompt = prompt.replace('“', '"').replace('”', '"')
-    p = '"(.*?)"'
-    strs = re.findall(p, prompt)
-    if len(strs) == 0:
-        strs = [' ']
-    return len(strs)
 
 def prompt_replace(prompt):
     #将中文符号“”中的所有内容替换为空内容，防止输入中文被检测到，从而加载翻译模型。
@@ -758,73 +694,21 @@ def prompt_replace(prompt):
             prompt = prompt.replace(f'"{s}"', f'*', 1)
     return prompt
 
-def generate_rectangles(w, h, n, max_trys=200):
-    img = np.zeros((h, w, 1), dtype=np.uint8)
-    rectangles = []
-    attempts = 0
-    n_pass = 0
-    low_edge = int(max(w, h)*0.3 if n <= 3 else max(w, h)*0.2)  # ~150, ~100
-    while attempts < max_trys:
-        rect_w = min(np.random.randint(max((w*0.5)//n, low_edge), w), int(w*0.8))
-        ratio = np.random.uniform(4, 10)
-        rect_h = max(low_edge, int(rect_w/ratio))
-        rect_h = min(rect_h, int(h*0.8))
-        # gen rotate angle
-        rotation_angle = 0
-        rand_value = np.random.rand()
-        if rand_value < 0.7:
-            pass
-        elif rand_value < 0.8:
-            rotation_angle = np.random.randint(0, 40)
-        elif rand_value < 0.9:
-            rotation_angle = np.random.randint(140, 180)
-        else:
-            rotation_angle = np.random.randint(85, 95)
-        # rand position
-        x = np.random.randint(0, w - rect_w)
-        y = np.random.randint(0, h - rect_h)
-        # get vertex
-        rect_pts = cv2.boxPoints(((rect_w/2, rect_h/2), (rect_w, rect_h), rotation_angle))
-        rect_pts = np.int32(rect_pts)
-        # move
-        rect_pts += (x, y)
-        # check boarder
-        if np.any(rect_pts < 0) or np.any(rect_pts[:, 0] >= w) or np.any(rect_pts[:, 1] >= h):
-            attempts += 1
-            continue
-        # check overlap
-        if any(check_overlap_polygon(rect_pts, rp) for rp in rectangles): # type: ignore
-            attempts += 1
-            continue
-        n_pass += 1
-        img = cv2.fillPoly(img, [rect_pts], 255)
-        cv2.imwrite(Random_Gen_Mask_path, 255-img[..., ::-1])
-        rectangles.append(rect_pts)
-        if n_pass == n:
-            break
-        if n >2 and n % 2 != 0:
-            img += img
-            img = cv2.imread(Random_Gen_Mask_path)
-        print("attempts:", attempts)
-    if len(rectangles) != n:
-        raise Exception(f'Failed in auto generate positions after {attempts} attempts, try again!')
-    return img
-
 # def replace_between(s, start, end, replacement):
 #     # 正则表达式，用以匹配从start到end之间的所有字符
 #     pattern = r"%s(.*?)%s" % (re.escape(start), re.escape(end))
 #     # 使用re.DOTALL标志来匹配包括换行在内的所有字符
 #     return re.sub(pattern, replacement, s, flags=re.DOTALL)
 
-def check_chinese(text):
-    from .AnyText_scripts.AnyText_bert_tokenizer import BasicTokenizer
-    checker = BasicTokenizer()
-    text = checker._clean_text(text)
-    for char in text:
-        cp = ord(char)
-        if checker._is_chinese_char(cp):
-            return True
-    return False
+# def check_chinese(text):
+#     from .AnyText_scripts.AnyText_bert_tokenizer import BasicTokenizer
+#     checker = BasicTokenizer()
+#     text = checker._clean_text(text)
+#     for char in text:
+#         cp = ord(char)
+#         if checker._is_chinese_char(cp):
+#             return True
+#     return False
 
 def modify_prompt(prompt):
     old_prompt = prompt
@@ -840,30 +724,3 @@ def modify_prompt(prompt):
             prompt = prompt.replace(f'"{s}"', f' {PLACE_HOLDER} ', 1)
     print(f'\033[93mFormat prompt: {old_prompt} --> {prompt}\033[0m')
     return prompt, strs
-
-def arr2tensor(arr, bs, dtype):
-        arr = np.transpose(arr, (2, 0, 1))
-        _arr = torch.from_numpy(arr.copy()).float().to(get_torch_device())
-        _arr = (torch.stack([_arr for _ in range(bs)], dim=0)).to(dtype)
-        return _arr
-    
-class VAE:
-    def __init__(self, vae):
-        self.vae = vae
-    
-    def decode(self, latent):
-        self.vae.to(get_torch_device())
-        samples = self.vae.decode(latent)
-        self.vae.to(vae_offload_device())
-        if torch.cuda.is_available():
-            soft_empty_cache(True)
-            clean_up()
-        
-        samples = (einops.rearrange(samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
-        
-        result = []
-        for sample in samples:
-            result.append(pil2tensor(sample))
-        result = torch.cat(result, dim=0)
-        
-        return result

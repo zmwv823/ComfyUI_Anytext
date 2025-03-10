@@ -2,11 +2,18 @@ import torch
 import numpy as np
 import os
 from  comfy import model_management as mm
+from comfy.model_patcher import ModelPatcher
+from comfy.latent_formats import SDXL, SD15, Flux
+from comfy.cli_args import args
 from PIL import Image
 import gc
 import folder_paths
 import cv2
-from comfy.latent_formats import SDXL, SD15
+import logging
+
+logger = logging.getLogger("Anytext")
+
+should_offload = torch.cuda.is_available() or torch.mps.is_available() or torch.xpu.is_available()
 
 device = mm.get_torch_device()
 
@@ -508,3 +515,210 @@ def comfy_clean_vram(**kwargs):
         print("   - Unable to clear cache")
     #time.sleep(2) # why?
     return (list(kwargs.values()))
+
+latent_format_map = {
+    "SD15": SD15(),
+    "SDXL": SDXL(),
+    "Flux": Flux(),
+}
+
+class CustomModelPatcher(ModelPatcher):
+    """
+        Overrall model or pipeline or main model 整体模型或者管线或者主模型
+            upper of model.diffusion_model(unet_upper), 
+            unet, clip, vae = model.model.diffusion_model, model.cond_stage_model, model.first_stage_model
+            clip_text_model, tokenizer = model.first_stage_model.transformer, model.first_stage_model.tokenizer
+    为class添加属性：Base_Model().__setattr__("tokenizer", None)
+    打印属性：attributes = dir(Base_Model) -> dict
+    for attr in attributes: 
+        if not attr.startswith('__'): 
+            print(f"{attr} = {getattr(Base_Model, attr)}")
+    """
+    def __init__(self, model, load_device, offload_device, size=0, weight_inplace_update=False):
+        super().__init__(model, load_device, offload_device, size, weight_inplace_update)
+        """
+        """
+        self.model = model #ldm overrall model that must contain a state_dict, model.diffusion_model
+        
+        self.sub_models = []
+        self.sub_models_noSD = []
+        
+        self.sub_patchers = []
+        
+        self.unet = None
+        self.unet_encoder = None
+        self.vae = None
+        self.vae1 = None
+        self.clip = None
+        self.tokenizer = None
+        self.clip_vision = None
+        self.clip_processor = None
+        self.image_processor = None
+        self.feature_extractor = None
+        self.processor = None
+        
+        self.embedding = None
+        self.control_net = None
+        self.ip_adapter = None
+        
+        self.visual_tokenizer = None
+        
+        self.model_type = None
+        
+        self.device = None
+        self.dtype = None
+        
+        self.quantization = "None"
+        self.load_kwargs = None
+        
+        #lora modules
+        self.model_clone = None
+        self.clip_clone = None
+        
+        # hook modelClass.device setter
+        def set_value(self, new_value):
+            pass
+        
+        try:
+            self.model.__class__.device = property(fget=self.model.__class__.device.fget, fset=set_value) #must be torch.nn.Module that have class(device)
+        except Exception as e:
+            # logger.error(e)
+            logger.warning(f'Warning: {e}')
+    
+    def set_latent_preview(self, model_type: str="SD15"):
+        """
+        For comfy latent_preview:
+            model_type (str, optional): _description_. Defaults to "SD15", supported types: SD15、SDXL、Flux.
+            load_device (torch.DeviceObjType, optional): _description_. Defaults to mm.get_torch_device().
+        """
+        self.model.__setattr__("latent_format", latent_format_map[model_type])
+        
+    def set_submodels_device_value(self):
+        # hook modelClass.device setter
+        def set_value(self, new_value):
+            pass
+        for k in self.sub_models: #sub models, must be torch.nn.Module that have class(device)
+                k.__setattr__("set_value", set_value)
+                try:
+                    k.__class__.device = property(fget=k.__class__.device.fget, fset=set_value)
+                except Exception as e:
+                    # logger.error(e)
+                    logger.warning(f'Warning: {e}')
+        
+    def check_inpaint(self, isInpaint: bool=False):
+        if isInpaint:
+            self.__setattr__("isInpaint", isInpaint)
+            
+    def offload_or_unload(self,
+                        keep_load: bool=True,
+                        keep_device: bool=True,
+                    ):
+        """
+        模型管理
+        """
+        if keep_load and keep_device and should_offload and self.device.type != "cpu" and not args.gpu_only and self.quantization != "8-bit":
+            # logger.info(f"Offload model: {self.model_type} to cpu (ram) on {self.load_device.type} device.")
+            logger.info(f"Offload model: {self.model_type} to cpu (ram) on {self.load_device.type} device.")
+            torch.nn.ModuleList(self.sub_models + [self.model]).to(self.offload_device)
+            mm.soft_empty_cache(True)
+            clean_up()
+            self.device = self.offload_device
+        elif not keep_load:
+            for i in self.sub_models_noSD+self.sub_models+self.sub_patchers:
+                del i
+            self.model = self.unet = self.unet_encoder = self.vae = self.clip = self.tokenizer = self.clip_vision = self.clip_processor = self.image_processor = self.feature_extractor = self.processor = self.embedding = self.control_net = self.ip_adapter = self.visual_tokenizer = self.model_clone = self.clip_clone = None
+            self.sub_models = self.sub_models_noSD = self.sub_patchers = []
+            logger.info(f"Try unload model: {self.model_type} to release resources on {self.load_device.type} device.")
+            mm.soft_empty_cache(True)
+            clean_up()
+            
+    def load_all_gpu(self, force_cpu: bool=False, to_load: bool=True, force_load: bool=False):
+        if should_offload and self.quantization != "8-bit":
+            if (not force_cpu and self.device.type == "cpu") or force_load:
+                logger.info(f'Load model: {self.model_type} to gpu.')
+                mm.load_models_gpu([self] + self.sub_patchers, force_full_load=True)
+                if self.quantization != "8-bit" and to_load:
+                    torch.nn.ModuleList(self.sub_models + [self.model]).to(self.load_device)
+                self.device = self.load_device
+            elif force_cpu and self.device.type != "cpu":
+                logger.info(f'Offload model: {self.model_type} to cpu with force_cpu checked.')
+                torch.nn.ModuleList(self.sub_models + [self.model]).to(self.offload_device)
+                mm.soft_empty_cache(True)
+                clean_up()
+                self.device = self.offload_device
+            
+    def custom_load(
+        self,
+        models: list=[],
+        patchers: list=[],
+        load_device: torch.DeviceObjType=mm.get_torch_device(),
+        offload_device: torch.DeviceObjType=mm.text_encoder_offload_device(),
+        force_cpu: bool=False,
+        force_load: bool=True
+    ):
+        """
+        Custom load models:
+            patchers (list, optional): _description_. Defaults to [].
+            models (list, optional): _description_. Defaults to [].
+            offload_device (torch.DeviceObjType, optional): _description_. Defaults to mm.text_encoder_offload_device().
+            force_cpu (bool, optional): _description_. Defaults to False.
+        """
+        load_device = load_device if load_device != self.load_device else self.load_device
+        offload_device = offload_device if offload_device != self.offload_device else self.offload_device
+        if should_offload:
+            if (not force_cpu and self.device.type == "cpu") or force_load:
+                logger.info(f'Load mdoels to gpu.')
+                torch.nn.ModuleList(models).to(load_device)
+                if len(patchers) != 0:
+                    mm.load_models_gpu(patchers)
+            elif force_cpu and self.device.type != "cpu":
+                logger.info("Offload model: load_device=='cuda' to cpu (ram) with force_cpu checked.")
+                torch.nn.ModuleList(models).to(offload_device)
+                mm.soft_empty_cache(True)
+                clean_up()
+        
+    def custom_offload(
+        self,
+        models: list=[],
+        do_clean: bool=False,
+        offload_device: torch.DeviceObjType=mm.text_encoder_offload_device(),
+        force_offload: bool=True
+    ):
+        offload_device = offload_device if offload_device != self.offload_device else self.offload_device
+        if should_offload:
+            if (not args.gpu_only and self.device.type != "cpu") or force_offload:
+                logger.info(f"Offload models to cpu (ram) on device with cuda (vram), do_clean: {do_clean}.")
+                torch.nn.ModuleList(models).to(offload_device)
+                if do_clean:
+                    mm.soft_empty_cache(True)
+                    clean_up()
+    
+    def custom_unload(self, models: list=[]):
+        for i in models:
+            del i
+        models = []
+        mm.soft_empty_cache(True)
+        clean_up()
+        
+    def forward(self):
+        pass
+        
+
+class Kwargs:
+    """
+    为class添加属性：Kwargs().__setattr__("image", None)
+    打印属性：attributes = dir(Kwargs) -> dict
+    for attr in attributes: 
+        if not attr.startswith('__'): 
+            print(f"{attr} = {getattr(Kwargs, attr)}")
+    """
+    def __init__(self, kwargs: dict=None):
+        if kwargs != None and kwargs != {}:
+            for k, v in kwargs.items():
+                self.__setattr__(k, v)
+                
+        self.keep_load = True
+        self.keep_device = True
+        
+    def forward(self):
+        pass

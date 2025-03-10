@@ -44,13 +44,16 @@ def draw_glyph(font, text):
     ratio = min(W*0.9/text_width, H*0.9/text_height)
     new_font = font.font_variant(size=int(g_size*ratio))
 
-    # text_width, text_height = new_font.getsize(text)
-    #增加使用pillow>9.5
-    x0, y0, x1, y1 = new_font.getbbox(text)
-    text_width, text_height = x1-x0, y1-y0
-    # offset_x, offset_y = new_font.getoffset(text)
-    #增加使用pillow>9.5
-    offset_x, offset_y = text_width, text_height
+    try:
+        text_width, text_height = new_font.getsize(text)
+        offset_x, offset_y = new_font.getoffset(text)
+    except Exception as e:
+        #增加使用pillow>9.5
+        # print(f'\033[93mWarning: pillow>9.5, change getsize to get bbox, maybe result to lower quality,\033[0m')
+        x0, y0, x1, y1 = new_font.getbbox(text)
+        text_width, text_height = x1-x0, y1-y0
+        offset_x, offset_y = text_width, text_height
+        
     x = (img.width - text_width) // 2
     y = (img.height - text_height) // 2 - offset_y//2
     draw.text((x, y), text, font=new_font, fill='white')

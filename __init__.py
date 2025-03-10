@@ -30,6 +30,10 @@ else:
   ## JoyType
 	from .Image_Generation.JoyType.nodes import NODE_CLASS_MAPPINGS as JoyType_Nodes
 	NODE_CLASS_MAPPINGS.update(JoyType_Nodes)
+ 
+  ## Common
+	from .Image_Generation.Common.merge_loras import NODE_CLASS_MAPPINGS as LoRA_Nodes
+	NODE_CLASS_MAPPINGS.update(LoRA_Nodes)
 
 # Image Process 
  ## Image_Process Common

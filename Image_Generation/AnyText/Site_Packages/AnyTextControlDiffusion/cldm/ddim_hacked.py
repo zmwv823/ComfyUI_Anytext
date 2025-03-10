@@ -3,7 +3,7 @@
 import torch
 import numpy as np
 from tqdm import tqdm
-
+from comfy.model_management import get_torch_device
 from ..ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like, extract_into_tensor
 
 
@@ -129,7 +129,8 @@ class DDIMSampler(object):
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None, dynamic_threshold=None,
                       ucg_schedule=None, generator=None):
-        device = self.model.betas.device
+        # device = self.model.betas.device
+        device = get_torch_device()
         b = shape[0]
         if x_T is None:
             img = torch.randn(shape, generator=generator, device=device)

@@ -2,11 +2,61 @@ import torch
 import torch.nn as nn
 from torch.utils.checkpoint import checkpoint
 
-from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel, AutoProcessor, CLIPVisionModelWithProjection, CLIPTextConfig
+from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel, CLIPTextConfig, AutoTokenizer#, AutoProcessor, CLIPVisionModelWithProjection
 
 import open_clip
 from ...util import count_params
 
+clip_l_config = {
+  "_name_or_path": "openai/clip-vit-large-patch14",
+  "architectures": [
+    "CLIPTextModel"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 0,
+  "dropout": 0.0,
+  "eos_token_id": 2,
+  "hidden_act": "quick_gelu",
+  "hidden_size": 768,
+  "initializer_factor": 1.0,
+  "initializer_range": 0.02,
+  "intermediate_size": 3072,
+  "layer_norm_eps": 1e-05,
+  "max_position_embeddings": 77,
+  "model_type": "clip_text_model",
+  "num_attention_heads": 12,
+  "num_hidden_layers": 12,
+  "pad_token_id": 1,
+  "projection_dim": 768,
+  "torch_dtype": "float32",
+  "transformers_version": "4.22.0.dev0",
+  "vocab_size": 49408
+}
+MiaoBi_clip_l_config = {
+  "_name_or_path": "C:/Users/user/Desktop/fsdownload/miaobi/",
+  "architectures": [
+    "CLIPTextModel"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 49406,
+  "dropout": 0.0,
+  "eos_token_id": 49407,
+  "hidden_act": "quick_gelu",
+  "hidden_size": 768,
+  "initializer_factor": 1.0,
+  "initializer_range": 0.02,
+  "intermediate_size": 3072,
+  "layer_norm_eps": 1e-05,
+  "max_position_embeddings": 77,
+  "model_type": "clip_text_model",
+  "num_attention_heads": 12,
+  "num_hidden_layers": 12,
+  "pad_token_id": 1,
+  "projection_dim": 768,
+  "torch_dtype": "float16",
+  "transformers_version": "4.38.1",
+  "vocab_size": 49408
+}
 
 def _expand_mask(mask, dtype, tgt_len=None):
     """
@@ -235,24 +285,22 @@ class FrozenCLIPT5Encoder(AbstractEncoder):
         return [clip_z, t5_z]
 
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-clip_l_tokenizer_dir = os.path.join(current_dir, "clip-l_tokenizer")
-clip_l_config_file = os.path.join(current_dir, "clip-l.json")
+clip_l_tokenizer_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tokenizer")
 class FrozenCLIPEmbedderT3(AbstractEncoder):
     """Uses the CLIP transformer encoder for text (from Hugging Face)"""
-    def __init__(self, version="openai/clip-vit-large-patch14", device="cuda", max_length=77, freeze=True, use_vision=False):
+    def __init__(self, version="openai/clip-vit-large-patch14", device="cuda", max_length=77, freeze=True, use_vision=False, is_miaobi=False):
         super().__init__()
         # self.tokenizer = CLIPTokenizer.from_pretrained(version)
         # self.transformer = CLIPTextModel.from_pretrained(version)
         
         self.tokenizer = CLIPTokenizer.from_pretrained(clip_l_tokenizer_dir)
-        clip_l_config = CLIPTextConfig.from_json_file(clip_l_config_file)
-        self.transformer = CLIPTextModel(clip_l_config)
+        config = CLIPTextConfig.from_dict(clip_l_config if not is_miaobi else MiaoBi_clip_l_config)
+        self.transformer = CLIPTextModel(config)
         
-        if use_vision:
-            self.vit = CLIPVisionModelWithProjection.from_pretrained(version)
-            self.processor = AutoProcessor.from_pretrained(version)
-        self.device = device
+        # if use_vision:
+        #     self.vit = CLIPVisionModelWithProjection.from_pretrained(version)
+        #     self.processor = AutoProcessor.from_pretrained(version)
+        # self.device = device
         self.max_length = max_length
         # if freeze:
         #     self.freeze()
@@ -389,7 +437,8 @@ class FrozenCLIPEmbedderT3(AbstractEncoder):
         tokens_list = self.split_chunks(input_ids)
         z_list = []
         for tokens in tokens_list:
-            tokens = tokens.to(self.device)
+            # tokens = tokens.to(self.device)
+            tokens = tokens.to(self.transformer.device)
             _z = self.transformer(input_ids=tokens, **kwargs)
             z_list += [_z]
         return torch.cat(z_list, dim=1)

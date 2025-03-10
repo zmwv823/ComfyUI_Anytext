@@ -9,6 +9,9 @@ omegaconf
 easydict
 open_clip_torch
 
+#AnyText2
+webcolors
+
 #nlp translator
 tensorflow
 modelscope

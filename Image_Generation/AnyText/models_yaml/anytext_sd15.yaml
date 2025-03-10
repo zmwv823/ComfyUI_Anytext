@@ -98,3 +98,4 @@ model:
         # version: /home/yuxiang.tyx/.cache/modelscope/hub/damo/cv_anytext_text_generation_editing/clip-vit-large-patch14
         # version: "openai/clip-vit-large-patch14"
         use_vision: false  # v6
+        is_miaobi: false

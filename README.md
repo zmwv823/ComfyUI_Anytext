@@ -31,8 +31,6 @@
 ### Modelscope: fp32
 - https://modelscope.cn/models/iic/cv_anytext_text_generation_editing/resolve/master/anytext_v1.1.ckpt
 - https://modelscope.cn/models/iic/cv_anytext2/resolve/master/anytext_v2.0.ckpt
-### Workflow in example_workflows dir:
-![](./example_workflows/T2I-AnyText.png)
 
 ## Fonts:`ComfyUI\models\fonts`
 ### Base font: select Auto_Download from huggingface or manual download from huggingface or modelscope or use any other fonts in `ComfyUI\models\fonts`. Either v1.1 and v2.0 all need a base font, official base font: `Arial_Unicode.ttf`.
@@ -65,7 +63,7 @@
 <!-- ## For sdxl checkpoints, download [original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl_base.yaml) and [inpaint_original_config_yaml](https://github.com/zmwv823/Stuffs/blob/master/sd_xl-inpainting_base.yaml) into `ComfyUI\models\configs`. -->
 
 ### Workflow in example_workflows dir:
-![](./example_workflows/Img_Gen-Glyph_ByT5-wf.png)
+![](./example_workflows/Glyph-ByT5.png)
 
 # 3、JoyType: Unofficial custom_node for [JoyType: A Robust Design for Multilingual Visual Text Creation](https://github.com/jdh-algo/JoyType)
 
@@ -76,4 +74,4 @@
 ## For JoyType controlnet, download from https://huggingface.co/jdh-algo/JoyType-v1-1M into `ComfyUI\models\controlnet`. It's a diffusers format canny controlnet, compitable with comfy sampler.
 
 ### Workflow in example_workflows dir:
-![](./example_workflows/Img_Gen-JoyType-wf.png)
+![](./example_workflows/JoyType.png)

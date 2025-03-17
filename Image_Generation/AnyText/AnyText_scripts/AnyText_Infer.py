@@ -186,12 +186,12 @@ def encode(
     
     gly_line_img = []
     glyphs_img = []
-    for g_la, g_lb in zip(gly_line_list, glyphs_list):
-        g_la, g_lb = torch.from_numpy(g_la).permute(2,0,1), torch.from_numpy(g_lb).permute(2,0,1)
-        gly_line_img.append(g_la)
-        glyphs_img.append(g_lb)
-    gly_line_img = torch.cat(gly_line_img, dim=0)
-    glyphs_img = torch.cat(glyphs_img, dim=0)
+    # for g_la, g_lb in zip(gly_line_list, glyphs_list):
+    #     g_la, g_lb = torch.from_numpy(g_la).permute(2,0,1), torch.from_numpy(g_lb).permute(2,0,1)
+    #     gly_line_img.append(g_la)
+    #     glyphs_img.append(g_lb)
+    # gly_line_img = torch.cat(gly_line_img, dim=0)
+    # glyphs_img = torch.cat(glyphs_img, dim=0)
     
     # return cond, un_cond, masked_x, font_img, gly_line_img, glyphs_img, masked_img.clone().cpu().float(), h, w, font_img, mask
     return cond, un_cond, h, w, glyphs_img, gly_line_img

@@ -240,24 +240,26 @@ def encode(
     un_cond = model.model.get_learned_conditioning(dict(c_concat=[hint], c_crossattn=[[[n_prompt] * img_count, [""] * img_count]], text_info=info))
     
     
-    font_img = []
-    for f_i in gly_pos_imgs:
-        f_i = torch.from_numpy(f_i).permute(2,0,1)
-        font_img.append(f_i)
-    font_img = torch.cat(font_img, dim=0)
+    # font_img = []
+    # for f_i in gly_pos_imgs:
+    #     f_i = torch.from_numpy(f_i).permute(2,0,1)
+    #     font_img.append(f_i)
+    # font_img = torch.cat(font_img, dim=0)
     
-    gly_line_img = []
-    glyphs_img = []
-    for g_la, g_lb in zip(gly_line_list, glyphs_list):
-        g_la, g_lb = torch.from_numpy(g_la).permute(2,0,1), torch.from_numpy(g_lb).permute(2,0,1)
-        gly_line_img.append(g_la)
-        glyphs_img.append(g_lb)
-    gly_line_img = torch.cat(gly_line_img, dim=0)
-    glyphs_img = torch.cat(glyphs_img, dim=0)
+    # gly_line_img = []
+    # glyphs_img = []
+    # for g_la, g_lb in zip(gly_line_list, glyphs_list):
+    #     g_la, g_lb = torch.from_numpy(g_la).permute(2,0,1), torch.from_numpy(g_lb).permute(2,0,1)
+    #     gly_line_img.append(g_la)
+    #     glyphs_img.append(g_lb)
+    # gly_line_img = torch.cat(gly_line_img, dim=0)
+    # glyphs_img = torch.cat(glyphs_img, dim=0)
     
-    glyph_img = torch.from_numpy(np.sum(np.stack(gly_pos_imgs), axis=0).clip(0, 255).astype(np.uint8)).permute(2,0,1)
+    # glyph_img = torch.from_numpy(np.sum(np.stack(gly_pos_imgs), axis=0).clip(0, 255).astype(np.uint8)).permute(2,0,1)
     
-    font_hint_img = torch.from_numpy(np.repeat(font_hint_bg.astype(np.uint8), 3, axis=2)).permute(2,0,1)
+    # font_hint_img = torch.from_numpy(np.repeat(font_hint_bg.astype(np.uint8), 3, axis=2)).permute(2,0,1)
+    
+    glyph_img = font_hint_img = []
         
     # return cond, un_cond, masked_x, font_img, gly_line_img, glyphs_img, masked_img.clone().cpu().float(), h, w, font_hint_img, glyph_img
     return cond, un_cond, h, w, font_hint_img, glyph_img

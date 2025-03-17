@@ -51,7 +51,7 @@ class UL_AnyTextSampler:
     TITLE = "AnyText Sampler"
     DESCRIPTION = "AnyText: Multilingual Visual Text Generation And Editing.\nAnyText多语言文字生成与编辑\n通过创新性的算法设计，可以支持中文、英语、日语、韩语等多语言的文字生成，还支持对输入图片中的文字内容进行编辑。本模型所涉及的文字生成技术为电商海报、Logo设计、创意涂鸦、表情包等新型AIGC应用提供了可能性。"
 
-    def sample(self, model, positive, negative, seed, steps, cfg, strength, attnx_scale, eta, keep_load, keep_device, backend_for_v1=True):
+    def sample(self, model, positive, negative, seed, steps, cfg, strength, attnx_scale, eta, keep_load, keep_device, backend_for_v1=False):
         if lowvram:
             model.custom_load(
                 [model.model.model, model.model.control_model],
@@ -131,7 +131,7 @@ class UL_AnyTextLoader:
         self.model_patcher = None
         self.load_kwargs = None
 
-    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype, init_device, backend_for_v1=True):
+    def Loader(self, ckpt_name, control_net_name, miaobi_clip, weight_dtype, init_device, backend_for_v1=False):
         import sys
         AnyTextBackbone_Dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Site_Packages")
         sys.path.append(AnyTextBackbone_Dir)
@@ -421,7 +421,7 @@ class UL_AnyTextComposer:
 class UL_AnyTextEncoder:
     @classmethod
     def INPUT_TYPES(cls):
-        font_list = os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
+        font_list = [file for file in os.listdir(os.path.join(folder_paths.models_dir, "fonts")) if file != ".cache"]
         return {
             "required": {
                 "model": ("AnyText_Model", ),
@@ -447,8 +447,10 @@ class UL_AnyTextEncoder:
 
     # RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "LATENT", "IMAGE", "IMAGE", "IMAGE", "IMAGE", "IMAGE", "MASK", )
     # RETURN_NAMES = ("positive", "negative", "mask_img", "masked_x", "font_img", "gly_line", "glyphs", "masked_img", "font_hint_img", "mask", )
-    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "IMAGE", )
-    RETURN_NAMES = ("positive", "negative", "font_hint", "font", )
+    # RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "IMAGE", "IMAGE", )
+    # RETURN_NAMES = ("positive", "negative", "font_hint", "font", )
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", )
+    RETURN_NAMES = ("positive", "negative", )
     FUNCTION = "encoder"
     CATEGORY = "UL Group/Image Generation"
     TITLE = "AnyText Encoder"
@@ -524,17 +526,18 @@ class UL_AnyTextEncoder:
                 do_clean=True
             )
         
-        if show_glyph:
-            font_hint_list = []
-            glyph_dir = os.path.join(comfy_temp_dir, "AnyText")
-            for i in os.listdir(glyph_dir):
-                if i.startswith("glyph2_"):
-                    img = pil2tensor(Image.open(os.path.join(glyph_dir, i)))
-                    font_hint_list.append(img)
-            font_hint_img = torch.cat(font_hint_list, dim=0)
+        # if show_glyph:
+        #     font_hint_list = []
+        #     glyph_dir = os.path.join(comfy_temp_dir, "AnyText")
+        #     for i in os.listdir(glyph_dir):
+        #         if i.startswith("glyph2_"):
+        #             img = pil2tensor(Image.open(os.path.join(glyph_dir, i)))
+        #             font_hint_list.append(img)
+        #     font_hint_img = torch.cat(font_hint_list, dim=0)
         
         # return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], mask, {"samples": 1. / 0.18215 * masked_x}, font_img, gly_line_img, glyphs_img, masked_img, font_hint_img, glyph_img, )
-        return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], font_hint_img, glyph_img, )
+        # return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], font_hint_img, glyph_img, )
+        return ([[cond, {"pooled_output": {}, "shape": (4, h // 8, w // 8), "batch_size": latent["samples"].shape[0]}]], [[un_cond, {"pooled_output": {}}]], )
     
 class UL_AnyTextFormatter:
     @classmethod
@@ -563,7 +566,7 @@ class UL_AnyTextFormatter:
 class UL_AnyText2Fonts:
     @classmethod
     def INPUT_TYPES(cls):
-        font_list = ['None'] + os.listdir(os.path.join(folder_paths.models_dir, "fonts"))
+        font_list = ['None'] + [file for file in os.listdir(os.path.join(folder_paths.models_dir, "fonts")) if file != ".cache"]
         AnyText_colors = copy.deepcopy(["None"]+Pillow_Color_Names)
         return {
             "required": {

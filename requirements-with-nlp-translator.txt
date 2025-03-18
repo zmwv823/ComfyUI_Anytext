@@ -19,6 +19,10 @@ simplejson
 sortedcontainers
 subword_nmt
 
+#AnyText2
+opencc
+webcolors
+
 # Glypg-SDXL
 diffusers
 mmengine

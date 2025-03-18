@@ -38,15 +38,15 @@ def encode(
     n_lines = len(texts)
     h, w = height, width
     
-    if random_mask:
-        mask = generate_rectangles(width, height, n_lines, max_trys=500, Random_Gen_Mask_path=Random_Gen_Mask_path)
-        pos_image = cv2.imread(Random_Gen_Mask_path)
-        if n_lines == 1 or n_lines % 2 ==0:
-            mask = pos_image
-        mask = numpy_cv2tensor(mask)
-    else:
-        pos_image = pos_image
-        mask = numpy_cv2tensor(pos_image)
+    # if random_mask:
+    #     mask = generate_rectangles(width, height, n_lines, max_trys=500, Random_Gen_Mask_path=Random_Gen_Mask_path)
+    #     pos_image = cv2.imread(Random_Gen_Mask_path)
+    #     if n_lines == 1 or n_lines % 2 ==0:
+    #         mask = pos_image
+    #     mask = numpy_cv2tensor(mask)
+    # else:
+    #     pos_image = pos_image
+    #     mask = numpy_cv2tensor(pos_image)
     
     sort_radio = '↔' if sort_radio else '↕'
     

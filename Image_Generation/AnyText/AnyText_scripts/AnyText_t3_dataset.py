@@ -107,8 +107,8 @@ def draw_glyph2(font, text, polygon, vertAng=10, scale=1, width=512, height=512,
         shrink = 0.75 if vert else 0.85
         font_size = min(w, h) / (text_w/max(w, h)) * shrink
     # print('\033[93m', font_size, '\n', type(font_size), '\033[0m')
-    if not font_size > 0:
-        font_size = min(max(1, int(font_size)), 100) #可以防止报错：font size must be greater than 0
+    # if not font_size > 0: # when the font_size is greater than 0 and smaller than 1,then it will throw exception "font size must be greater than 0"
+    font_size = min(max(1, int(font_size)), 100) 
     new_font = font.font_variant(size=int(font_size))
 
     left, top, right, bottom = new_font.getbbox(text)
